@@ -94,8 +94,8 @@ defmodule Anthropix do
   ]
 
   @doc """
-  Creates a new Anthropix API client, using the API key set in your
-  application's config.
+  Calling `init/1` without passing an API key, creates a new Anthropix API
+  client using the API key set in your application's config.
 
   ```elixir
   config :anthropix, :api_key, "sk-ant-your-key"
@@ -110,15 +110,17 @@ defmodule Anthropix do
   %Anthropix{}
   ```
   """
-  @spec init(keyword()) :: client()
+  @spec init() :: client()
   def init(), do: init([])
+  @spec init(keyword()) :: client()
   def init(opts) when is_list(opts) do
     Application.fetch_env!(:anthropix, :api_key) |> init(opts)
   end
 
   @doc """
-  Creates a new Anthropix API client, using the given API key. Optionally, a
-  keyword list of options can be passed through to `Req.new/1`.
+  Calling `init/2` with an API key creates a new Anthropix API client, using the
+  given API key. Optionally, a keyword list of options can be passed through to
+  `Req.new/1`.
 
   ## Examples
 
