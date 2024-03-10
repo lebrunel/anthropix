@@ -1,6 +1,10 @@
 # Anthropix
 
- An up-to-date and fully-featured Elixir client library for [Anthropic's REST API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api).
+![Hex.pm](https://img.shields.io/hexpm/v/anthropix?color=informational)
+![License](https://img.shields.io/github/license/lebrunel/anthropix?color=informational)
+![Build Status](https://img.shields.io/github/actions/workflow/status/lebrunel/anthropix/elixir.yml?branch=main)
+
+An up-to-date and fully-featured Elixir client library for [Anthropic's REST API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api).
 
 - ✅ API client fully implementing the Anthropic API
 - 🛜 Streaming API requests

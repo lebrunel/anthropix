@@ -1,6 +1,8 @@
 defmodule Anthropix do
   @version Keyword.fetch!(Mix.Project.config(), :version)
   @moduledoc """
+  ![License](https://img.shields.io/github/license/lebrunel/anthropix?color=informational)
+
   An up-to-date and fully-featured Elixir client library for
   [Anthropic's REST API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api).
 
