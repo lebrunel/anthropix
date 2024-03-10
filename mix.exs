@@ -4,11 +4,25 @@ defmodule Anthropix.MixProject do
   def project do
     [
       app: :anthropix,
-      version: "0.1.0",
-      elixir: "~> 1.15",
+      name: "Anthropix",
+      description: "todo",
+      source_url: "https://github.com/lebrunel/anthropix",
+      version: "0.0.1",
+      elixir: "~> 1.13",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      docs: [
+        main: "Anthropix"
+      ],
+      package: [
+        name: "anthropix",
+        files: ~w(lib .formatter.exs mix.exs README.md LICENSE),
+        licenses: ["Apache-2.0"],
+        links: %{
+          "GitHub" => "https://github.com/lebrunel/anthropix"
+        }
+      ]
     ]
   end
 

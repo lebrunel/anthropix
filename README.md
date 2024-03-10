@@ -1,12 +1,14 @@
 # Anthropix
 
- An up-to-date and simple Elixir client library for [Anthropic's REST API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api).
+ An up-to-date and fully-featured Elixir client library for [Anthropic's REST API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api).
 
-- 🔄 Up-to-date Elixir API client
+- ✅ API client fully implementing the Anthropic API
 - 🛜 Streaming API requests
   - Stream to an Enumerable
   - Or stream messages to any Elixir process
-- 🧩 Advanced function calling workflows (soon)
+- 🔜 Advanced and flexible function calling workflow
+
+This library is currently a WIP. Check back in a week or two, by which point it should be bangin!
 
 ## Installation
 
@@ -15,7 +17,7 @@ The package can be installed by adding `anthropix` to your list of dependencies 
 ```elixir
 def deps do
   [
-    {:anthropix, "#{@version}"}
+    {:anthropix, "0.0.1"}
   ]
 end
 ```
