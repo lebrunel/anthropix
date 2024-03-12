@@ -10,7 +10,7 @@ defmodule Anthropix do
   - 🛜 Streaming API requests
     - Stream to an Enumerable
     - Or stream messages to any Elixir process
-  - 🔜 Advanced and flexible function calling workflow
+  - 🧩 Advanced and flexible function calling workflow
 
   This library is currently a WIP. Check back in a week or two, by which point
   it should be bangin!
@@ -33,6 +33,7 @@ defmodule Anthropix do
   TODO...
   """
   use Anthropix.Schemas
+  alias Anthropix.{APIError, Tool, XML}
 
   defstruct [:req]
 
@@ -42,7 +43,7 @@ defmodule Anthropix do
   }
 
 
-  schema :content, [
+  schema :message_content, [
     type: [type: :string, required: true],
     text: [type: :string],
     content: [type: :map, keys: [
@@ -52,14 +53,14 @@ defmodule Anthropix do
     ]]
   ]
 
-  schema :message, [
+  schema :chat_message, [
     role: [
       type: :string,
       required: true,
       doc: "The role of the message, either `user` or `assistant`."
     ],
     content: [
-      type: {:or, [:string, {:list, {:map, schema(:content).schema}}]},
+      type: {:or, [:string, {:list, {:map, schema(:message_content).schema}}]},
       required: true,
       doc: "Message content, either a single string or an array of content blocks."
     ]
@@ -70,13 +71,13 @@ defmodule Anthropix do
 
   A chat message is a `t:map/0` with the following fields:
 
-  #{doc(:message)}
+  #{doc(:chat_message)}
   """
   @type message() :: map()
 
   @typedoc "Client response"
   @type response() ::
-    {:ok, map() | boolean() | Enumerable.t() | Task.t()} |
+    {:ok, map() | Enumerable.t() | Task.t()} |
     {:error, term()}
 
   @typep req_response() ::
@@ -141,14 +142,14 @@ defmodule Anthropix do
   end
 
 
-  schema :messages, [
+  schema :chat, [
     model: [
       type: :string,
       required: true,
       doc: "The model that will complete your prompt.",
     ],
     messages: [
-      type: {:list, {:map, schema(:message).schema}},
+      type: {:list, {:map, schema(:chat_message).schema}},
       required: true,
       doc: "Input messages.",
     ],
@@ -174,6 +175,10 @@ defmodule Anthropix do
       default: false,
       doc: "Whether to incrementally stream the response using server-sent events.",
     ],
+    tools: [
+      type: {:list, {:struct, Tool}},
+      doc: "A list of tools the model may call.",
+    ],
     temperature: [
       type: :float,
       doc: "Amount of randomness injected into the response."
@@ -194,13 +199,13 @@ defmodule Anthropix do
 
   ## Options
 
-  #{doc(:messages)}
+  #{doc(:chat)}
 
   ## Message structure
 
   Each message is a map with the following fields:
 
-  #{doc(:message)}
+  #{doc(:chat_message)}
 
   ## Examples
 
@@ -212,7 +217,7 @@ defmodule Anthropix do
   ...>   %{role: "user", content: "How is that different than mie scattering?"},
   ...> ]
 
-  iex> Anthropix.messages(client, [
+  iex> Anthropix.chat(client, [
   ...>   model: "claude-3-opus-20240229",
   ...>   messages: messages,
   ...> ])
@@ -222,7 +227,7 @@ defmodule Anthropix do
   }], ...}}
 
   # Passing true to the :stream option initiates an async streaming request.
-  iex> Anthropix.messages(client, [
+  iex> Anthropix.chat(client, [
   ...>   model: "claude-3-opus-20240229",
   ...>   messages: messages,
   ...>   stream: true,
@@ -230,15 +235,55 @@ defmodule Anthropix do
   {:ok, #Function<52.53678557/2 in Stream.resource/3>}
   ```
   """
-  @spec messages(client(), keyword()) :: any()
-  def messages(%__MODULE__{} = client, params \\ []) do
-    with {:ok, params} <- NimbleOptions.validate(params, schema(:messages)) do
+  @spec chat(client(), keyword()) :: response()
+  def chat(%__MODULE__{} = client, params \\ []) do
+    with {:ok, params} <- NimbleOptions.validate(params, schema(:chat)) do
+      params =
+        params
+        |> use_tools()
+        |> Enum.into(%{})
+
       client
-      |> req(:post, "/messages", json: Enum.into(params, %{}))
+      |> req(:post, "/messages", json: params)
       |> res()
     end
   end
 
+
+  # If the params contains tools, setup the system prompt and stop sequnces
+  @spec use_tools(keyword()) :: keyword()
+  defp use_tools(params) do
+    case Keyword.get(params, :tools) do
+      tools when is_list(tools) and length(tools) > 0 ->
+        prompt = """
+        In this environment you have access to a set of tools you can use to answer the user's question.
+
+        You may call them like this:
+
+        <function_calls>
+          <invoke>
+            <tool_name>$TOOL_NAME</tool_name>
+            <parameters>
+              <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME>
+              ...
+            </parameters>
+          </invoke>
+        </function_calls>
+
+        Here are the tools available:
+
+        #{Saxy.encode!(XML.tools(tools))}
+        """
+        stop = "</function_calls>"
+        params
+        |> Keyword.delete(:tools)
+        |> Keyword.update(:stop_sequences, [stop], & [stop | &1])
+        |> Keyword.update(:system, prompt, & prompt <> "\n" <> &1)
+
+      _ ->
+        params
+    end
+  end
 
   # Builds the request from the given params
   @spec req(client(), atom(), Req.url(), keyword()) :: req_response()
@@ -272,8 +317,8 @@ defmodule Anthropix do
     {:ok, body}
   end
 
-  defp res({:ok, %{status: status}}) do
-    {:error, Anthropix.HTTPError.exception(status)}
+  defp res({:ok, %{body: body}}) do
+    {:error, APIError.exception(body)}
   end
 
   defp res({:error, error}), do: {:error, error}
@@ -315,8 +360,8 @@ defmodule Anthropix do
       {^ref, {:ok, %Req.Response{status: status}}} when status in 200..299 ->
         {:halt, task}
 
-      {^ref, {:ok, %Req.Response{status: status}}} ->
-        raise Anthropix.HTTPError.exception(status)
+      {^ref, {:ok, %Req.Response{body: body}}} ->
+        raise APIError.exception(body)
 
       {^ref, {:error, error}} ->
         raise error

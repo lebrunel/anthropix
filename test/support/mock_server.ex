@@ -87,7 +87,14 @@ defmodule Anthropix.MockServer do
   end
 
   defp respond(conn, status) when is_number(status) do
-    send_resp(conn, status, "")
+    conn
+    |> put_resp_header("content-type", "application/json")
+    |> send_resp(status, Jason.encode!(%{
+      error: %{
+        type: Plug.Conn.Status.reason_atom(status),
+        message: Plug.Conn.Status.reason_phrase(status),
+      }
+    }))
   end
 
   defp stream(conn, name) do

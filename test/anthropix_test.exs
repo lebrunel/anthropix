@@ -1,6 +1,6 @@
 defmodule AnthropixTest do
   use ExUnit.Case
-  alias Anthropix.HTTPError
+  alias Anthropix.APIError
 
   setup_all do
     {:ok, pid} = Bandit.start_link(plug: Anthropix.MockServer)
@@ -46,9 +46,9 @@ defmodule AnthropixTest do
     end
   end
 
-  describe "messages/2" do
+  describe "chat/2" do
     test "generates a response for a given prompt", %{client: client} do
-      assert {:ok, res} = Anthropix.messages(client, [
+      assert {:ok, res} = Anthropix.chat(client, [
         model: "claude-3-sonnet-20240229",
         messages: [
           %{role: "user", content: "Write a haiku about the colour of the sky."}
@@ -61,7 +61,7 @@ defmodule AnthropixTest do
     end
 
     test "streams a response for a given prompt", %{client: client} do
-      assert {:ok, stream} = Anthropix.messages(client, [
+      assert {:ok, stream} = Anthropix.chat(client, [
         model: "claude-3-sonnet-20240229",
         messages: [
           %{role: "user", content: "Write a haiku about the colour of the sky."}
@@ -76,7 +76,7 @@ defmodule AnthropixTest do
     end
 
     test "returns error when model not found", %{client: client} do
-      assert {:error, %HTTPError{status: 404}} = Anthropix.messages(client, [
+      assert {:error, %APIError{type: "not_found"}} = Anthropix.chat(client, [
         model: "not-found",
         messages: [
           %{role: "user", content: "Write a haiku about the colour of the sky."}
@@ -87,7 +87,7 @@ defmodule AnthropixTest do
 
   describe "streaming methods" do
     test "with stream: true, returns a lazy enumerable", %{client: client} do
-      assert {:ok, stream} = Anthropix.messages(client, [
+      assert {:ok, stream} = Anthropix.chat(client, [
         model: "claude-3-sonnet-20240229",
         messages: [
           %{role: "user", content: "Write a haiku about the colour of the sky."}
@@ -101,7 +101,7 @@ defmodule AnthropixTest do
 
     test "with stream: pid, returns a task and sends messages to pid", %{client: client} do
       {:ok, pid} = Anthropix.StreamCatcher.start_link()
-      assert {:ok, task} = Anthropix.messages(client, [
+      assert {:ok, task} = Anthropix.chat(client, [
         model: "claude-3-sonnet-20240229",
         messages: [
           %{role: "user", content: "Write a haiku about the colour of the sky."}
