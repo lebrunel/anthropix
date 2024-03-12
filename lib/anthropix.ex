@@ -272,7 +272,7 @@ defmodule Anthropix do
 
         Here are the tools available:
 
-        #{Saxy.encode!(XML.tools(tools))}
+        #{XML.encode(:tools, tools)}
         """
         stop = "</function_calls>"
         params

@@ -1,59 +1,75 @@
 defmodule Anthropix.XML do
-  alias Anthropix.FunctionCall
-  alias Anthropix.Tool
+  @moduledoc """
+  Support module for encoding XML data into prompts. Mainly used to support
+  function calling.
+  """
+  alias Anthropix.{FunctionCall, Tool}
+  import Saxy.XML, only: [element: 3]
 
-  def encode(node, level \\ 0)
-  def encode({name, _args, value}, level) when is_binary(value) do
-    :binary.copy("  ", level) <> "<#{name}>#{value}</#{name}>"
-  end
-  def encode({name, _args, children}, level) when is_list(children) do
-    indent = :binary.copy("  ", level)
-    value = Enum.map(children, & encode(&1, level+1)) |> Enum.join("\n")
-    "#{indent}<#{name}>\n#{value}\n#{indent}</#{name}>"
-  end
+  @allowed_roots [:tools, :function_results]
+
+  @doc """
+  Encodes the given data into the specified message type. Supports encoding
+  a list of `t:Tool.t()` structs into a `:tools` message, or a list of
+  `t:FunctionCall.t()` structs into a `:function_results` message.
+
+  ## Examples
+
+  ```elixir
+  iex> Anthropix.XML.encode(:tools, [
+  ...>   %Anthropix.Tool{name: "a", description: "aaa", params: [
+  ...>     %{name: "b", description: "bbb", type: "string"}
+  ...>   ]}
+  ...> ])
+  "<tools><tool_description><tool_name>a</tool_name><description>aaa</description><parameters><parameter><name>b</name><description>bbb</description><type>string</type></parameter></parameters></tool_description></tools>"
+
+  iex> Anthropix.XML.encode(:function_results, [
+  ...>   %Anthropix.FunctionCall{name: "a", result: "aaa"}
+  ...> ])
+  "<function_results><result><tool_name>a</tool_name><stdout>aaa</stdout></result></function_results>"
+  ```
+  """
+  @spec encode(atom(), term()) :: String.t()
+  def encode(type, data) when type in @allowed_roots,
+    do: el(type, data) |> Saxy.encode!()
 
 
-  def function_results(calls) when is_list(calls) do
-    el(:function_results, Enum.map(calls, &result/1))
-  end
+  # Builds a SAX element of the specified type using the given data.
+  @spec el(atom(), data :: term()) :: Saxy.XML.element()
+  defp el(:tools, tools) when is_list(tools),
+    do: element(:tools, [], Enum.map(tools, & el(:tool, &1)))
 
-  def function_results(error) when is_exception(error) do
-    el(:function_results, [
-      el(:error, Exception.message(error))
+  defp el(:tool, %Tool{} = tool) do
+    element(:tool_description, [], [
+      element(:tool_name, [], tool.name),
+      element(:description, [], tool.description),
+      element(:parameters, [], Enum.map(tool.params, & el(:param, &1)))
     ])
   end
 
-  def result(%FunctionCall{name: name, result: result}) do
-    el(:result, [
-      el(:tool_name, name),
-      el(:stdout, result)
+  defp el(:param, %{name: name, description: description, type: type}) do
+    element(:parameter, [], [
+      element(:name, [], name),
+      element(:description, [], description),
+      element(:type, [], type),
     ])
   end
 
-  def tools(tools) when is_list(tools) do
-    el(:tools, Enum.map(tools, &tool/1))
+  defp el(:function_results, functions) when is_list(functions) do
+    element(:function_results, [], Enum.map(functions, & el(:result, &1)))
   end
 
-  def tool(%Tool{name: name, description: description, params: params}) do
-    el(:tool_description, [
-      el(:tool_name, name),
-      el(:description, description),
-      el(:parameters, Enum.map(params, &param/1))
+  defp el(:function_results, error) when is_exception(error) do
+    element(:function_results, [], [
+      element(:error, [], Exception.message(error))
     ])
   end
 
-  def param(%{name: name, description: description, type: type}) do
-    el(:parameter, [
-      el(:name, name),
-      el(:description, description),
-      el(:type, type),
+  defp el(:result, %FunctionCall{} = function) do
+    element(:result, [], [
+      element(:tool_name, [], function.name),
+      element(:stdout, [], function.result)
     ])
   end
-
-  @spec el(atom() | String.t(), list(tuple()) | String.t()) :: tuple()
-  defp el(name, children), do: Saxy.XML.element(name, [], children)
-
-  #@spec chars(String.t()) :: Saxy.XML.characters()
-  #defp chars(text), do: Saxy.XML.characters(text)
 
 end
