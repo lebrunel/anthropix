@@ -9,9 +9,11 @@ defmodule Anthropix.XML do
   @allowed_roots [:tools, :function_results]
 
   @doc """
-  Encodes the given data into the specified message type. Supports encoding
-  a list of `t:Tool.t()` structs into a `:tools` message, or a list of
-  `t:FunctionCall.t()` structs into a `:function_results` message.
+  Encodes the given data into the specified message type.
+
+  Supports encoding a list of `t:Anthropix.Tool.t/0` structs into a `:tools`
+  message, or a list of `t:Anthropix.FunctionCall.t/0` structs into a
+  `:function_results` message.
 
   ## Examples
 

@@ -5,7 +5,7 @@ defmodule Anthropix.MixProject do
     [
       app: :anthropix,
       name: "Anthropix",
-      description: "todo",
+      description: "Anthropix is an open-source Elixir client with interacting with Claude, Anthropic's powerful language model.",
       source_url: "https://github.com/lebrunel/anthropix",
       version: "0.0.1",
       elixir: "~> 1.13",
@@ -36,11 +36,10 @@ defmodule Anthropix.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:bandit, "~> 1.2", only: :test},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
       {:nimble_options, "~> 1.1"},
-      {:plug, "~> 1.15"},
+      {:plug, "~> 1.15", only: :test},
       {:req, "~> 0.4"},
       {:saxy, "~> 1.5"},
     ]

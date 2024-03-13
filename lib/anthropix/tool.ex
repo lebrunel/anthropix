@@ -1,6 +1,6 @@
 defmodule Anthropix.Tool do
   @moduledoc """
-  The `Tool` module allows you to let Claude call functions in your application.
+  The `Anthropix.Tool` module allows you to let Claude call functions in your application.
 
   The `t:Anthropix.Tool.t/0` struct wraps around any function in your
   application - referenced functions, anonymous functions, or MFA style

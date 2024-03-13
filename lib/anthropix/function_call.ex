@@ -1,6 +1,6 @@
 defmodule Anthropix.FunctionCall do
   @moduledoc """
-  The `FunctionCall` module is used to capture function calls from Claud's
+  The `Anthropix.FunctionCall` module is used to capture function calls from Claud's
   responses and, match the function call to an existing `t:Anthropix.Tool.t/0`,
   and then invoke the function.
 

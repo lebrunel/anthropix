@@ -1,6 +1,6 @@
 defmodule Anthropix.Agent do
   @moduledoc """
-  The `Agent` module makes function calling with Claude a breeze!
+  The `Anthropix.Agent` module makes function calling with Claude a breeze!
 
   Whilst it's possible to manually implement function calling using
   `Anthropix.chat/2`, this module provides an interface on top that automates
@@ -15,7 +15,7 @@ defmodule Anthropix.Agent do
   automatically, send the result back to Claude, iterating as many times as is
   necessary before ultimately a final result is returned.
 
-  `chat/2` returns a `t:t()` struct, which contains a list of all
+  `chat/2` returns a `t:t/0` struct, which contains a list of all
   messages, a sum of all usage statistics, as well as the final response.
 
   ## Example
