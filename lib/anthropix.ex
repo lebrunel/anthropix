@@ -46,7 +46,7 @@ defmodule Anthropix do
   schema :message_content, [
     type: [type: :string, required: true],
     text: [type: :string],
-    content: [type: :map, keys: [
+    source: [type: :map, keys: [
       type: [type: :string, required: :true],
       media_type: [type: :string, required: :true],
       data: [type: :string, required: :true],
@@ -73,7 +73,21 @@ defmodule Anthropix do
 
   #{doc(:chat_message)}
   """
-  @type message() :: map()
+  @type message() :: %{
+    role: String.t(),
+    content: String.t() | list(content_block())
+  }
+
+  @typedoc "Message content block."
+  @type content_block() :: %{
+    :type => String.t(),
+    optional(:text) => String.t(),
+    optional(:source) => %{
+      type: String.t(),
+      media_type: String.t(),
+      data: String.t(),
+    }
+  }
 
   @typedoc "Client response"
   @type response() ::
@@ -194,8 +208,8 @@ defmodule Anthropix do
   ]
 
   @doc """
-  Send a structured list of input messages with text and/or image content, and
-  the model will generate the next message in the conversation.
+  Chat with Claude. Send a list of structured input messages with text and/or
+  image content, and Claude will generate the next message in the conversation.
 
   ## Options
 

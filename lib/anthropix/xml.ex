@@ -61,7 +61,7 @@ defmodule Anthropix.XML do
 
   defp el(:function_results, error) when is_exception(error) do
     element(:function_results, [], [
-      element(:error, [], Exception.message(error))
+      element(:error, [], inspect(error.__struct__))
     ])
   end
 
