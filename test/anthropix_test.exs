@@ -1,12 +1,6 @@
 defmodule AnthropixTest do
   use ExUnit.Case
-  alias Anthropix.APIError
-
-  setup_all do
-    {:ok, pid} = Bandit.start_link(plug: Anthropix.MockServer)
-    on_exit(fn -> Process.exit(pid, :normal) end)
-    {:ok, client: Anthropix.init("test_key", base_url: "http://localhost:4000")}
-  end
+  alias Anthropix.{APIError, Mock}
 
   describe "init without api_key" do
     test "raises if no api_key in config" do
@@ -47,7 +41,8 @@ defmodule AnthropixTest do
   end
 
   describe "chat/2" do
-    test "generates a response for a given prompt", %{client: client} do
+    test "generates a response for a given prompt" do
+      client = Mock.client(& Mock.respond(&1, :messages))
       assert {:ok, res} = Anthropix.chat(client, [
         model: "claude-3-sonnet-20240229",
         messages: [
@@ -60,7 +55,8 @@ defmodule AnthropixTest do
       assert Enum.all?(res["content"], &is_map/1)
     end
 
-    test "streams a response for a given prompt", %{client: client} do
+    test "streams a response for a given prompt" do
+      client = Mock.client(& Mock.stream(&1, :messages))
       assert {:ok, stream} = Anthropix.chat(client, [
         model: "claude-3-sonnet-20240229",
         messages: [
@@ -75,7 +71,8 @@ defmodule AnthropixTest do
       assert get_in(last, ["usage", "output_tokens"]) == 34
     end
 
-    test "returns error when model not found", %{client: client} do
+    test "returns error when model not found" do
+      client = Mock.client(& Mock.respond(&1, 404))
       assert {:error, %APIError{type: "not_found"}} = Anthropix.chat(client, [
         model: "not-found",
         messages: [
@@ -86,7 +83,8 @@ defmodule AnthropixTest do
   end
 
   describe "streaming methods" do
-    test "with stream: true, returns a lazy enumerable", %{client: client} do
+    test "with stream: true, returns a lazy enumerable" do
+      client = Mock.client(& Mock.stream(&1, :messages))
       assert {:ok, stream} = Anthropix.chat(client, [
         model: "claude-3-sonnet-20240229",
         messages: [
@@ -99,8 +97,9 @@ defmodule AnthropixTest do
       assert Enum.to_list(stream) |> length() == 31
     end
 
-    test "with stream: pid, returns a task and sends messages to pid", %{client: client} do
+    test "with stream: pid, returns a task and sends messages to pid" do
       {:ok, pid} = Anthropix.StreamCatcher.start_link()
+      client = Mock.client(& Mock.stream(&1, :messages))
       assert {:ok, task} = Anthropix.chat(client, [
         model: "claude-3-sonnet-20240229",
         messages: [
