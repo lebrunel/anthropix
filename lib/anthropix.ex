@@ -1,7 +1,7 @@
 defmodule Anthropix do
   @version Keyword.fetch!(Mix.Project.config(), :version)
   @moduledoc """
-  ![Ollama-ex](https://raw.githubusercontent.com/lebrunel/anthropix/main/media/poster.webp)
+  ![Anthropix](https://raw.githubusercontent.com/lebrunel/anthropix/main/media/poster.webp)
 
   ![License](https://img.shields.io/github/license/lebrunel/anthropix?color=informational)
 

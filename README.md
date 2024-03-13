@@ -1,6 +1,6 @@
 # Anthropix
 
-![Ollama-ex](https://raw.githubusercontent.com/lebrunel/anthropix/main/media/poster.webp)
+![Anthropix](https://raw.githubusercontent.com/lebrunel/anthropix/main/media/poster.webp)
 
 ![Hex.pm](https://img.shields.io/hexpm/v/anthropix?color=informational)
 ![License](https://img.shields.io/github/license/lebrunel/anthropix?color=informational)
