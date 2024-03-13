@@ -1,6 +1,8 @@
 defmodule Anthropix do
   @version Keyword.fetch!(Mix.Project.config(), :version)
   @moduledoc """
+  ![Ollama-ex](https://raw.githubusercontent.com/lebrunel/anthropix/main/media/poster.webp)
+
   ![License](https://img.shields.io/github/license/lebrunel/anthropix?color=informational)
 
   Anthropix is an open-source Elixir client for the Anthropic API, providing a
@@ -11,7 +13,7 @@ defmodule Anthropix do
   - 🛜 Streaming API requests
     - Stream to an Enumerable
     - Or stream messages to any Elixir process
-  - 🕶️ Powerful yet painless function calling with **Agents**
+  - 😎 Powerful yet painless function calling with **Agents**
 
   ## Installation
 
@@ -21,7 +23,7 @@ defmodule Anthropix do
   ```elixir
   def deps do
     [
-      {:anthropix, "#{@version}"}
+      {:anthropix, "~> #{@version}"}
     ]
   end
   ```

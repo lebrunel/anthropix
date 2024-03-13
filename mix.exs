@@ -5,7 +5,7 @@ defmodule Anthropix.MixProject do
     [
       app: :anthropix,
       name: "Anthropix",
-      description: "Anthropix is an open-source Elixir client with interacting with Claude, Anthropic's powerful language model.",
+      description: "Unofficial Anthropic API client for Elixir. Integrate Claude, Anthropic's powerful language model, into your applications.",
       source_url: "https://github.com/lebrunel/anthropix",
       version: "0.0.1",
       elixir: "~> 1.13",

@@ -1,5 +1,7 @@
 # Anthropix
 
+![Ollama-ex](https://raw.githubusercontent.com/lebrunel/anthropix/main/media/poster.webp)
+
 ![Hex.pm](https://img.shields.io/hexpm/v/anthropix?color=informational)
 ![License](https://img.shields.io/github/license/lebrunel/anthropix?color=informational)
 ![Build Status](https://img.shields.io/github/actions/workflow/status/lebrunel/anthropix/elixir.yml?branch=main)
@@ -10,7 +12,7 @@ Anthropix is an open-source Elixir client for the Anthropic API, providing a sim
 - 🛜 Streaming API requests
   - Stream to an Enumerable
   - Or stream messages to any Elixir process
-- 🕶️ Powerful yet painless function calling with **Agents**
+- 😎 Powerful yet painless function calling with **Agents**
 
 ## Installation
 
@@ -19,7 +21,7 @@ The package can be installed by adding `anthropix` to your list of dependencies 
 ```elixir
 def deps do
   [
-    {:anthropix, "#{@version}"}
+    {:anthropix, "~> 0.1"}
   ]
 end
 ```
@@ -117,14 +119,14 @@ Anthropix.Agent.chat(agent, [
     %{role: "user", content: "What is the current stock price of General Motors?"}
   ]
 ])
-%{
-  result: %{
-    "content" => [%{
-      "type" => "text",
-      "text" => "*snaps fingers* Damn shawty, General Motors' stock is sittin' pretty at $39.21 per share right now. Dat's a fly price for them big ballers investin' in one of Detroit's finest auto makers, ya heard? *puts hands up like car doors* If ya askin' Snoop, dat stock could be rollin' on some dubs fo' sho'. Just don't get caught slippin' when them prices dippin', ya dig?"
-    }]
-  }
-}
+# %{
+#   result: %{
+#     "content" => [%{
+#       "type" => "text",
+#       "text" => "*snaps fingers* Damn shawty, General Motors' stock is sittin' pretty at $39.21 per share right now. Dat's a fly price for them big ballers investin' in one of Detroit's finest auto makers, ya heard? *puts hands up like car doors* If ya askin' Snoop, dat stock could be rollin' on some dubs fo' sho'. Just don't get caught slippin' when them prices dippin', ya dig?"
+#     }]
+#   }
+# }
 ```
 
 For a more detailed walkthrough, refer to the `Anthropix.Agent` documentation.
