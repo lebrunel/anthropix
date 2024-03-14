@@ -44,7 +44,6 @@ See `Anthropix.chat/2`.
 
 ```elixir
 messages = [
-  %{role: "system", content: "You are a helpful assistant."},
   %{role: "user", content: "Why is the sky blue?"},
   %{role: "assistant", content: "Due to rayleigh scattering."},
   %{role: "user", content: "How is that different than mie scattering?"},
