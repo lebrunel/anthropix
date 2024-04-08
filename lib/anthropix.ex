@@ -13,7 +13,6 @@ defmodule Anthropix do
   - 🛜 Streaming API requests
     - Stream to an Enumerable
     - Or stream messages to any Elixir process
-  - 😎 Powerful yet painless function calling with **Agents**
 
   ## Installation
 
@@ -86,62 +85,9 @@ defmodule Anthropix do
   using this approach inside GenServer callbacks may cause the GenServer to
   misbehave. Setting the `:stream` option to a `t:pid/0` returns a `t:Task.t/0`
   which will send messages to the specified process.
-
-  ## Function calling
-
-  Chatting with Claude is nice and all, but when it comes to function calling,
-  Anthropix has a trick up its sleeve. Meet `Anthropix.Agent`.
-
-  The Agent module abstracts away all the rough bits of implementing
-  [Anthropic style function calling](https://docs.anthropic.com/claude/docs/functions-external-tools),
-  leaving a delightfully simple API that opens the doors to powerful and
-  advanced agent workflows.
-
-  ```elixir
-  iex> ticker_tool = %Anthropix.Tool.new([
-  ...>   name: "get_ticker_symbol",
-  ...>   description: "Gets the stock ticker symbol for a company searched by name. Returns str: The ticker symbol for the company stock. Raises TickerNotFound: if no matching ticker symbol is found.",
-  ...>   params: [
-  ...>     %{name: "company_name", description: "The name of the company.", type: "string"}
-  ...>   ],
-  ...>   function: &MyStocks.get_ticker/1
-  ...> ])
-
-  iex> price_tool = %Anthropix.Tool.new([
-  ...>   name: "get_current_stock_price",
-  ...>   description: "Gets the current stock price for a company. Returns float: The current stock price. Raises ValueError: if the input symbol is invalid/unknown.",
-  ...>   params: [
-  ...>     %{name: "symbol", description: "The stock symbol of the company to get the price for.", type: "string"}
-  ...>   ],
-  ...>   function: &MyStocks.get_price/1
-  ...> ])
-
-  iex> agent = Anthropix.Agent.init(
-  ...>   Anthropix.init(api_key),
-  ...>   [ticker_tool, price_tool]
-  ...> )
-
-  iex> Anthropix.Agent.chat(agent, [
-  ...>   model: "claude-3-sonnet-20240229",
-  ...>   system: "Answer like Snoop Dogg.",
-  ...>   messages: [
-  ...>     %{role: "user", content: "What is the current stock price of General Motors?"}
-  ...>   ]
-  ...> ])
-  %{
-    result: %{
-      "content" => [%{
-        "type" => "text",
-        "text" => "*snaps fingers* Damn shawty, General Motors' stock is sittin' pretty at $39.21 per share right now. Dat's a fly price for them big ballers investin' in one of Detroit's finest auto makers, ya heard? *puts hands up like car doors* If ya askin' Snoop, dat stock could be rollin' on some dubs fo' sho'. Just don't get caught slippin' when them prices dippin', ya dig?"
-      }]
-    }
-  }
-  ```
-
-  For a more detailed walkthrough, refer to the `Anthropix.Agent` documentation.
   """
   use Anthropix.Schemas
-  alias Anthropix.{APIError, Tool, XML}
+  alias Anthropix.APIError
 
   defstruct [:req]
 
@@ -151,16 +97,6 @@ defmodule Anthropix do
   }
 
 
-  schema :message_content, [
-    type: [type: :string, required: true],
-    text: [type: :string],
-    source: [type: :map, keys: [
-      type: [type: :string, required: :true],
-      media_type: [type: :string, required: :true],
-      data: [type: :string, required: :true],
-    ]]
-  ]
-
   schema :chat_message, [
     role: [
       type: :string,
@@ -168,9 +104,27 @@ defmodule Anthropix do
       doc: "The role of the message, either `user` or `assistant`."
     ],
     content: [
-      type: {:or, [:string, {:list, {:map, schema(:message_content).schema}}]},
+      type: {:or, [:string, {:list, :map}]},
       required: true,
       doc: "Message content, either a single string or an array of content blocks."
+    ]
+  ]
+
+  schema :chat_tool, [
+    name: [
+      type: :string,
+      required: true,
+      doc: "Name of the tool."
+    ],
+    description: [
+      type: :string,
+      required: true,
+      doc: "Description of the tool"
+    ],
+    input_schema: [
+      type: :map,
+      required: true,
+      doc: "JSON schema for the tool input shape that the model will produce in tool_use output content blocks."
     ]
   ]
 
@@ -187,14 +141,63 @@ defmodule Anthropix do
   }
 
   @typedoc "Message content block."
-  @type content_block() :: %{
-    :type => String.t(),
-    optional(:text) => String.t(),
-    optional(:source) => %{
+  @type content_block() ::
+    content_text() |
+    content_media() |
+    content_tool_use() |
+    content_tool_result()
+
+  @type content_text() :: %{
+    type: String.t(),
+    text: String.t()
+  }
+
+  @type content_media() :: %{
+    type: String.t(),
+    source: %{
       type: String.t(),
       media_type: String.t(),
       data: String.t(),
     }
+  }
+
+  @type content_tool_use() :: %{
+    type: String.t(),
+    id: String.t(),
+    name: String.t(),
+    input: %{optional(String.t()) => String.t()}
+  }
+
+  @type content_tool_result() :: %{
+    type: String.t(),
+    tool_use_id: String.t(),
+    content: %{optional(String.t()) => String.t()}
+  }
+
+  @typedoc """
+  Tool.
+
+  A chat tool is a `t:map/0` with the following fields:
+
+  #{doc(:chat_tool)}
+  """
+  @type tool() :: %{
+    name: String.t(),
+    description: String.t(),
+    input_schema: input_schema(),
+  }
+
+  @typedoc "JSON schema for the tool `input` shape."
+  @type input_schema() :: %{
+    :type => String.t(),
+    :properties => %{
+      optional(String.t()) => %{
+        optional(:enum) => list(String.t()),
+        type: String.t(),
+        description: String.t(),
+      }
+    },
+    optional(:required) => list(String.t())
   }
 
   @typedoc "Client response"
@@ -259,6 +262,7 @@ defmodule Anthropix do
     req = @default_req_opts
     |> Keyword.merge(opts)
     |> Req.new()
+    |> Req.Request.put_header("anthropic-beta", "tools-2024-04-04")
     |> Req.Request.put_header("x-api-key", api_key)
     |> Req.Request.put_headers(headers)
 
@@ -299,13 +303,13 @@ defmodule Anthropix do
       default: false,
       doc: "Whether to incrementally stream the response using server-sent events.",
     ],
-    tools: [
-      type: {:list, {:struct, Tool}},
-      doc: "A list of tools the model may call.",
-    ],
     temperature: [
       type: :float,
       doc: "Amount of randomness injected into the response."
+    ],
+    tools: [
+      type: {:list, {:map, schema(:chat_tool).schema}},
+      doc: "A list of tools the model may call.",
     ],
     top_k: [
       type: :integer,
@@ -361,52 +365,47 @@ defmodule Anthropix do
   @spec chat(client(), keyword()) :: response()
   def chat(%__MODULE__{} = client, params \\ []) do
     with {:ok, params} <- NimbleOptions.validate(params, schema(:chat)) do
-      params =
-        params
-        |> use_tools()
-        |> Enum.into(%{})
-
       client
-      |> req(:post, "/messages", json: params)
+      |> req(:post, "/messages", json: Enum.into(params, %{}))
       |> res()
     end
   end
 
 
-  # If the params contains tools, setup the system prompt and stop sequnces
-  @spec use_tools(keyword()) :: keyword()
-  defp use_tools(params) do
-    case Keyword.get(params, :tools) do
-      tools when is_list(tools) and length(tools) > 0 ->
-        prompt = """
-        In this environment you have access to a set of tools you can use to answer the user's question.
-
-        You may call them like this:
-
-        <function_calls>
-          <invoke>
-            <tool_name>$TOOL_NAME</tool_name>
-            <parameters>
-              <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME>
-              ...
-            </parameters>
-          </invoke>
-        </function_calls>
-
-        Here are the tools available:
-
-        #{XML.encode(:tools, tools)}
-        """
-        stop = "</function_calls>"
-        params
-        |> Keyword.delete(:tools)
-        |> Keyword.update(:stop_sequences, [stop], & [stop | &1])
-        |> Keyword.update(:system, prompt, & prompt <> "\n" <> &1)
-
-      _ ->
-        params
-    end
-  end
+  ## If the params contains tools, setup the system prompt and stop sequnces
+  #@spec use_tools(keyword()) :: keyword()
+  #defp use_tools(params) do
+  #  case Keyword.get(params, :tools) do
+  #    tools when is_list(tools) and length(tools) > 0 ->
+  #      prompt = """
+  #      In this environment you have access to a set of tools you can use to answer the user's question.
+  #
+  #      You may call them like this:
+  #
+  #      <function_calls>
+  #        <invoke>
+  #          <tool_name>$TOOL_NAME</tool_name>
+  #          <parameters>
+  #            <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME>
+  #            ...
+  #          </parameters>
+  #        </invoke>
+  #      </function_calls>
+  #
+  #      Here are the tools available:
+  #
+  #      #{XML.encode(:tools, tools)}
+  #      """
+  #      stop = "</function_calls>"
+  #      params
+  #      |> Keyword.delete(:tools)
+  #      |> Keyword.update(:stop_sequences, [stop], & [stop | &1])
+  #      |> Keyword.update(:system, prompt, & prompt <> "\n" <> &1)
+  #
+  #    _ ->
+  #      params
+  #  end
+  #end
 
   # Builds the request from the given params
   @spec req(client(), atom(), Req.url(), keyword()) :: req_response()
