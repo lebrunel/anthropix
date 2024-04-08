@@ -41,7 +41,6 @@ defmodule Anthropix.MixProject do
       {:nimble_options, "~> 1.1"},
       {:plug, "~> 1.15", only: :test},
       {:req, "~> 0.4"},
-      {:saxy, "~> 1.5"},
     ]
   end
 
