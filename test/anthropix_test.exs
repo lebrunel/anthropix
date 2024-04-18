@@ -109,7 +109,7 @@ defmodule AnthropixTest do
       ])
 
       assert match?(%Task{}, task)
-      Task.await(task)
+      assert {:ok, %{"content" => [%{"text" => "Here's a haiku" <> _} | _]}} = Task.await(task)
       assert Anthropix.StreamCatcher.get_state(pid) |> length() == 31
       GenServer.stop(pid)
     end

@@ -411,23 +411,41 @@ defmodule Anthropix do
   @spec req(client(), atom(), Req.url(), keyword()) :: req_response()
   defp req(%__MODULE__{req: req}, method, url, opts) do
     opts = Keyword.merge(opts, method: method, url: url)
+    stream_opt = get_in(opts, [:json, :stream])
+    dest = if is_pid(stream_opt), do: stream_opt, else: self()
 
-    case get_in(opts, [:json, :stream]) do
-      true ->
-        opts = Keyword.put(opts, :into, send_to(self()))
-        task = Task.async(Req, :request, [req, opts])
-        {:ok, Stream.resource(fn -> task end, &stream_next/1, &stream_end/1)}
+    if stream_opt do
+      opts =
+        opts
+        |> Keyword.update!(:json, & Map.put(&1, :stream, true))
+        |> Keyword.put(:into, stream_handler(dest))
 
-      pid when is_pid(pid) ->
-        opts =
-          opts
-          |> Keyword.update!(:json, & Map.put(&1, :stream, true))
-          |> Keyword.put(:into, send_to(pid))
-        {:ok, Task.async(Req, :request, [req, opts])}
+      task = Task.async(fn -> Req.request(req, opts) |> res() end)
 
-      _ ->
-        Req.request(req, opts)
+      case stream_opt do
+        true -> {:ok, Stream.resource(fn -> task end, &stream_next/1, &stream_end/1)}
+        _ -> {:ok, task}
+      end
+    else
+      Req.request(req, opts)
     end
+
+    #case get_in(opts, [:json, :stream]) do
+    #  true ->
+    #    opts = Keyword.put(opts, :into, stream_handler(self()))
+    #    task = Task.async(Req, :request, [req, opts])
+    #    {:ok, Stream.resource(fn -> task end, &stream_next/1, &stream_end/1)}
+    #
+    #  pid when is_pid(pid) ->
+    #    opts =
+    #      opts
+    #      |> Keyword.update!(:json, & Map.put(&1, :stream, true))
+    #      |> Keyword.put(:into, stream_handler(pid))
+    #    {:ok, Task.async(Req, :request, [req, opts])}
+    #
+    #  _ ->
+    #    Req.request(req, opts)
+    #end
   end
 
   # Normalizes the response returned from the request
@@ -457,21 +475,48 @@ defmodule Anthropix do
   ]
 
   # Returns a callback to handle streaming responses
-  @spec send_to(pid()) :: fun()
-  defp send_to(pid) do
-    fn {:data, data}, acc ->
-      @sse_regex
-      |> Regex.scan(data)
-      |> Enum.each(fn
-        [_, event, data] when event in @sse_events ->
-          data = Jason.decode!(data)
+  @spec stream_handler(pid()) :: fun()
+  defp stream_handler(pid) do
+    fn {:data, data}, {req, res} ->
+      res =
+        @sse_regex
+        |> Regex.scan(data)
+        |> Enum.filter(& match?([_, event, _data] when event in @sse_events, &1))
+        |> Enum.map(fn [_, _event, data] -> Jason.decode!(data) end)
+        |> Enum.reduce(res, fn data, res ->
           Process.send(pid, {self(), {:data, data}}, [])
-        _event ->
-          nil
-      end)
-      {:cont, acc}
+          stream_merge(res, data)
+        end)
+
+      {:cont, {req, res}}
     end
   end
+
+  # Merges streaming message responses
+  @spec stream_merge(Req.Response.t(), map()) :: Req.Response.t()
+  defp stream_merge(res, %{"type" => "message_start", "message" => message}),
+    do: put_in(res.body, message)
+
+  defp stream_merge(res, %{"type" => "content_block_start", "index" => i, "content_block" => block}) do
+    update_in(res.body, fn body ->
+      update_in(body, ["content"], & List.insert_at(&1, i, block))
+    end)
+  end
+
+  defp stream_merge(res, %{"type" => "content_block_delta", "index" => i, "delta" => delta}) do
+    update_in(res.body, fn body ->
+      update_in(body, ["content"], fn content ->
+        List.update_at(content, i, fn block ->
+          update_in(block, ["text"], & &1 <> delta["text"])
+        end)
+      end)
+    end)
+  end
+
+  defp stream_merge(res, %{"type" => "message_delta", "delta" => delta}),
+    do: update_in(res.body, & Map.merge(&1, delta))
+
+  defp stream_merge(res, _data), do: res
 
   # Recieve messages into a stream
   defp stream_next(%Task{pid: pid, ref: ref} = task) do
