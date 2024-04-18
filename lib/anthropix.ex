@@ -10,6 +10,7 @@ defmodule Anthropix do
   model, into your applications.
 
   - ✅ API client fully implementing the [Anthropic API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api)
+  - 🛠️ Tool use (function calling)
   - 🛜 Streaming API requests
     - Stream to an Enumerable
     - Or stream messages to any Elixir process

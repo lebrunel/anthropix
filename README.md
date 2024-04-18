@@ -9,6 +9,7 @@
 Anthropix is an open-source Elixir client for the Anthropic API, providing a simple and convenient way to integrate Claude, Anthropic's powerful language model, into your applications.
 
 - ✅ API client fully implementing the [Anthropic API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api)
+- 🛠️ Tool use (function calling)
 - 🛜 Streaming API requests
   - Stream to an Enumerable
   - Or stream messages to any Elixir process
@@ -20,7 +21,7 @@ The package can be installed by adding `anthropix` to your list of dependencies 
 ```elixir
 def deps do
   [
-    {:anthropix, "~> 0.2"}
+    {:anthropix, "~> 0.3"}
   ]
 end
 ```
