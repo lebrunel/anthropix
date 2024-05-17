@@ -113,7 +113,7 @@ defmodule Anthropix.Mock do
     ]
   }
 
-  @spec client(function()) :: Anthropix.t()
+  @spec client(function()) :: Anthropix.client()
   def client(plug) when is_function(plug, 1) do
     struct(Anthropix, req: Req.new(plug: plug))
   end

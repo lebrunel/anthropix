@@ -129,6 +129,18 @@ defmodule Anthropix do
     ]
   ]
 
+  schema :chat_tool_choice, [
+    type: [
+      type: :string,
+      required: true,
+      doc: "One of `auto`, `any` or `tool`."
+    ],
+    name: [
+      type: :string,
+      doc: "The name of the tool to use."
+    ]
+  ]
+
   @typedoc """
   Chat message
 
@@ -263,7 +275,7 @@ defmodule Anthropix do
     req = @default_req_opts
     |> Keyword.merge(opts)
     |> Req.new()
-    |> Req.Request.put_header("anthropic-beta", "tools-2024-04-04")
+    |> Req.Request.put_header("anthropic-beta", "tools-2024-05-16")
     |> Req.Request.put_header("x-api-key", api_key)
     |> Req.Request.put_headers(headers)
 
@@ -312,6 +324,11 @@ defmodule Anthropix do
       type: {:list, {:map, schema(:chat_tool).schema}},
       doc: "A list of tools the model may call.",
     ],
+    tool_choice: [
+      type: :map,
+      keys: schema(:chat_tool_choice).schema,
+      doc: "How to use the provided tools."
+    ],
     top_k: [
       type: :integer,
       doc: "Only sample from the top K options for each subsequent token."
@@ -335,6 +352,12 @@ defmodule Anthropix do
   Each message is a map with the following fields:
 
   #{doc(:chat_message)}
+
+  ## Tool structure
+
+  Each tool is a map with the following fields:
+
+  #{doc(:chat_tool)}
 
   ## Examples
 
