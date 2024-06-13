@@ -275,7 +275,6 @@ defmodule Anthropix do
     req = @default_req_opts
     |> Keyword.merge(opts)
     |> Req.new()
-    |> Req.Request.put_header("anthropic-beta", "tools-2024-05-16")
     |> Req.Request.put_header("x-api-key", api_key)
     |> Req.Request.put_headers(headers)
 
