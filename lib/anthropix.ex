@@ -258,12 +258,15 @@ defmodule Anthropix do
   @doc """
   Calling `init/2` with an API key creates a new Anthropix API client, using the
   given API key. Optionally, a keyword list of options can be passed through to
-  `Req.new/1`.
+  `Req.new/1` or extra headers for Anthropic.
 
   ## Examples
 
   ```elixir
   iex> client = Anthropix.init("sk-ant-your-key", receive_timeout: :infinity)
+  %Anthropix{}
+
+  iex> client = Anthropix.init("sk-ant-your-key", headers: [{"anthropic-beta", "prompt-caching-2024-07-31"}])
   %Anthropix{}
   ```
   """
