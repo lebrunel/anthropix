@@ -98,6 +98,54 @@ defmodule Anthropix do
   }
 
 
+  schema :cache_control, [
+    type: [
+      type: {:in, ["ephemeral"]},
+      required: true,
+    ]
+  ]
+
+  schema :system_message_content, [
+    type: [
+      type: {:in, ["text"]},
+      required: true,
+    ],
+    text: [
+      type: :string,
+      required: true,
+    ],
+    cache_control: [
+      type: :map,
+      keys: schema(:cache_control).schema,
+      doc: "Cache-control parameter."
+    ]
+  ]
+
+  schema :chat_message_content, [
+    type: [
+      type: {:in, ["text", "image", "tool_use", "tool_result"]},
+      required: true,
+    ],
+    # text type
+    text: [type: :string],
+    # image type
+    source: [type: :map],
+    # tool_use
+    id: [type: :string],
+    name: [type: :string],
+    input: [type: :map],
+    # tool_result
+    tool_use_id: [type: :string],
+    is_error: [type: :boolean],
+    content: [type: {:or, [:string, {:list, :map}]}],
+
+    cache_control: [
+      type: :map,
+      keys: schema(:cache_control).schema,
+      doc: "Cache-control parameter."
+    ]
+  ]
+
   schema :chat_message, [
     role: [
       type: :string,
@@ -105,10 +153,10 @@ defmodule Anthropix do
       doc: "The role of the message, either `user` or `assistant`."
     ],
     content: [
-      type: {:or, [:string, {:list, :map}]},
+      type: {:or, [:string, {:list, {:map, schema(:chat_message_content).schema}}]},
       required: true,
       doc: "Message content, either a single string or an array of content blocks."
-    ]
+    ],
   ]
 
   schema :chat_tool, [
@@ -126,6 +174,11 @@ defmodule Anthropix do
       type: :map,
       required: true,
       doc: "JSON schema for the tool input shape that the model will produce in tool_use output content blocks."
+    ],
+    cache_control: [
+      type: :map,
+      keys: schema(:cache_control).schema,
+      doc: "Cache-control parameter."
     ]
   ]
 
@@ -232,6 +285,11 @@ defmodule Anthropix do
     receive_timeout: 60_000,
   ]
 
+  @default_beta_tokens [
+    "prompt-caching-2024-07-31",
+    "message-batches-2024-09-24",
+  ]
+
   @doc """
   Calling `init/1` without passing an API key, creates a new Anthropix API
   client using the API key set in your application's config.
@@ -270,12 +328,14 @@ defmodule Anthropix do
   """
   @spec init(String.t(), keyword()) :: client()
   def init(api_key, opts \\ []) when is_binary(api_key) do
+    {betas, opts} = Keyword.pop(opts, :beta, @default_beta_tokens)
     {headers, opts} = Keyword.pop(opts, :headers, [])
 
     req = @default_req_opts
     |> Keyword.merge(opts)
     |> Req.new()
     |> Req.Request.put_header("x-api-key", api_key)
+    |> Req.Request.put_header("anthropic-beta", Enum.join(betas, ","))
     |> Req.Request.put_headers(headers)
 
     struct(__MODULE__, req: req)
@@ -294,7 +354,7 @@ defmodule Anthropix do
       doc: "Input messages.",
     ],
     system: [
-      type: :string,
+      type: {:or, [:string, {:list, {:map, schema(:system_message_content).schema}}]},
       doc: "System prompt.",
     ],
     max_tokens: [
@@ -394,42 +454,6 @@ defmodule Anthropix do
     end
   end
 
-
-  ## If the params contains tools, setup the system prompt and stop sequnces
-  #@spec use_tools(keyword()) :: keyword()
-  #defp use_tools(params) do
-  #  case Keyword.get(params, :tools) do
-  #    tools when is_list(tools) and length(tools) > 0 ->
-  #      prompt = """
-  #      In this environment you have access to a set of tools you can use to answer the user's question.
-  #
-  #      You may call them like this:
-  #
-  #      <function_calls>
-  #        <invoke>
-  #          <tool_name>$TOOL_NAME</tool_name>
-  #          <parameters>
-  #            <$PARAMETER_NAME>$PARAMETER_VALUE</$PARAMETER_NAME>
-  #            ...
-  #          </parameters>
-  #        </invoke>
-  #      </function_calls>
-  #
-  #      Here are the tools available:
-  #
-  #      #{XML.encode(:tools, tools)}
-  #      """
-  #      stop = "</function_calls>"
-  #      params
-  #      |> Keyword.delete(:tools)
-  #      |> Keyword.update(:stop_sequences, [stop], & [stop | &1])
-  #      |> Keyword.update(:system, prompt, & prompt <> "\n" <> &1)
-  #
-  #    _ ->
-  #      params
-  #  end
-  #end
-
   # Builds the request from the given params
   @spec req(client(), atom(), Req.url(), keyword()) :: req_response()
   defp req(%__MODULE__{req: req}, method, url, opts) do
@@ -452,23 +476,6 @@ defmodule Anthropix do
     else
       Req.request(req, opts)
     end
-
-    #case get_in(opts, [:json, :stream]) do
-    #  true ->
-    #    opts = Keyword.put(opts, :into, stream_handler(self()))
-    #    task = Task.async(Req, :request, [req, opts])
-    #    {:ok, Stream.resource(fn -> task end, &stream_next/1, &stream_end/1)}
-    #
-    #  pid when is_pid(pid) ->
-    #    opts =
-    #      opts
-    #      |> Keyword.update!(:json, & Map.put(&1, :stream, true))
-    #      |> Keyword.put(:into, stream_handler(pid))
-    #    {:ok, Task.async(Req, :request, [req, opts])}
-    #
-    #  _ ->
-    #    Req.request(req, opts)
-    #end
   end
 
   # Normalizes the response returned from the request
