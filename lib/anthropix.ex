@@ -10,7 +10,9 @@ defmodule Anthropix do
   model, into your applications.
 
   - ✅ API client fully implementing the [Anthropic API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api)
-  - 🛠️ Tool use (function calling)
+  - 🧰 Tool use (function calling)
+  - ⚡ Prompt caching
+  - 📦 Message batching (`Anthropix.Batch`)
   - 🛜 Streaming API requests
     - Stream to an Enumerable
     - Or stream messages to any Elixir process
@@ -30,7 +32,16 @@ defmodule Anthropix do
 
   ## Quickstart
 
-  For more examples, refer to the [Anthropix documentation](https://hexdocs.pm/anthropix).
+  > #### Beta features {: .info}
+  >
+  > Anthropic frequently ship new features under a beta flag, requiring headers
+  to be added to your requests to take advantage of the feature. This library
+  currently enables the following beta headers by default:
+  >
+  > - `prompt-caching-2024-07-31`
+  > - `message-batches-2024-09-24`
+  >
+  > If required, beta headers can be customised with `init/2`.
 
   ### Initiate a client.
 
@@ -271,7 +282,8 @@ defmodule Anthropix do
     {:ok, map() | Enumerable.t() | Task.t()} |
     {:error, term()}
 
-  @typep req_response() ::
+  @typedoc false
+  @type req_response() ::
     {:ok, Req.Response.t() | Task.t() | Enum.t()} |
     {:error, term()}
 
@@ -572,5 +584,8 @@ defmodule Anthropix do
 
   # Tidy up when the streaming request is finished
   defp stream_end(%Task{ref: ref}), do: Process.demonitor(ref, [:flush])
+
+  @doc false
+  def chat_schema, do: schema(:chat).schema
 
 end
