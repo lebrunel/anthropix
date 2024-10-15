@@ -31,7 +31,7 @@ end
 ## Quickstart
 
 > [!NOTE]
-> #### Beta features {: .info}
+> #### Beta features
 >
 > Anthropic frequently ship new features under a beta flag, requiring headers
 to be added to your requests to take advantage of the feature. This library
