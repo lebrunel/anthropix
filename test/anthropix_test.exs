@@ -1,5 +1,5 @@
 defmodule AnthropixTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Anthropix.{APIError, Mock}
 
   describe "init without api_key" do

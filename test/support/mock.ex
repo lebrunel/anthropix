@@ -19,53 +19,68 @@ defmodule Anthropix.Mock do
       "usage" => %{"input_tokens" => 18, "output_tokens" => 36}
     },
 
-    {:agent, :messages, 1} => %{
-      "content" => [
+    :batch_list => %{
+      "data" => [
         %{
-          "text" => "Here's how I'll find the current stock price for General Motors, yo:\n\n<function_calls>\n<invoke>\n<tool_name>get_ticker_symbol</tool_name>\n<parameters>\n<company_name>General Motors</company_name>\n</parameters>\n</invoke>\n",
-          "type" => "text"
+          "cancel_initiated_at" => nil,
+          "created_at" => "2024-10-14T17:18:08.256576+00:00",
+          "ended_at" => "2024-10-14T17:18:35.428981+00:00",
+          "expires_at" => "2024-10-15T17:18:08.256576+00:00",
+          "id" => "msgbatch_01DJuZbTFXpGRhqTdqFH1P2R",
+          "processing_status" => "ended",
+          "request_counts" => %{
+            "canceled" => 0,
+            "errored" => 0,
+            "expired" => 0,
+            "processing" => 0,
+            "succeeded" => 2
+          },
+          "results_url" => "https://api.anthropic.com/v1/messages/batches/msgbatch_01DJuZbTFXpGRhqTdqFH1P2R/results",
+          "type" => "message_batch"
         }
       ],
-      "id" => "msg_01FJNLQSEpck6s1cimMJ9Ru1",
-      "model" => "claude-3-sonnet-20240229",
-      "role" => "assistant",
-      "stop_reason" => "stop_sequence",
-      "stop_sequence" => "</function_calls>",
-      "type" => "message",
-      "usage" => %{"input_tokens" => 333, "output_tokens" => 73}
+      "first_id" => "msgbatch_01DJuZbTFXpGRhqTdqFH1P2R",
+      "has_more" => false,
+      "last_id" => "msgbatch_01DJuZbTFXpGRhqTdqFH1P2R"
     },
 
-    {:agent, :messages, 3} => %{
-      "content" => [
-        %{
-          "text" => "Aight, got the ticker symbol GM for General Motors. Now let me look up that current stock price:\n\n<function_calls>\n<invoke>\n<tool_name>get_current_stock_price</tool_name>\n<parameters>\n<symbol>GM</symbol>\n</parameters>\n</invoke>\n",
-          "type" => "text"
-        }
-      ],
-      "id" => "msg_01QjBCr47TNUzpPvqnr5Yfn5",
-      "model" => "claude-3-sonnet-20240229",
-      "role" => "assistant",
-      "stop_reason" => "stop_sequence",
-      "stop_sequence" => "</function_calls>",
-      "type" => "message",
-      "usage" => %{"input_tokens" => 439, "output_tokens" => 77}
+    :batch_create => %{
+      "cancel_initiated_at" => nil,
+      "created_at" => "2024-10-14T17:18:08.256576+00:00",
+      "ended_at" => nil,
+      "expires_at" => "2024-10-15T17:18:08.256576+00:00",
+      "id" => "msgbatch_01DJuZbTFXpGRhqTdqFH1P2R",
+      "processing_status" => "in_progress",
+      "request_counts" => %{
+        "canceled" => 0,
+        "errored" => 0,
+        "expired" => 0,
+        "processing" => 2,
+        "succeeded" => 0
+      },
+      "results_url" => nil,
+      "type" => "message_batch"
     },
 
-    {:agent, :messages, 5} => %{
-      "content" => [
-        %{
-          "text" => "Word, the current stock price for General Motors is $39.21. Representing that big auto money, ya dig? Gotta make them stacks and invest wisely in the motor city players.",
-          "type" => "text"
-        }
-      ],
-      "id" => "msg_01Nq9eY6wnrSSs5QDKYD9yHE",
-      "model" => "claude-3-sonnet-20240229",
-      "role" => "assistant",
-      "stop_reason" => "end_turn",
-      "stop_sequence" => nil,
-      "type" => "message",
-      "usage" => %{"input_tokens" => 553, "output_tokens" => 45}
-    }
+    :batch_show => %{
+      "cancel_initiated_at" => nil,
+      "created_at" => "2024-10-14T17:18:08.256576+00:00",
+      "ended_at" => "2024-10-14T17:18:35.428981+00:00",
+      "expires_at" => "2024-10-15T17:18:08.256576+00:00",
+      "id" => "msgbatch_01DJuZbTFXpGRhqTdqFH1P2R",
+      "processing_status" => "ended",
+      "request_counts" => %{
+        "canceled" => 0,
+        "errored" => 0,
+        "expired" => 0,
+        "processing" => 0,
+        "succeeded" => 2
+      },
+      "results_url" => "https://api.anthropic.com/v1/messages/batches/msgbatch_01DJuZbTFXpGRhqTdqFH1P2R/results",
+      "type" => "message_batch"
+    },
+
+    :batch_results => "{\"custom_id\":\"foo\",\"result\":{\"type\":\"succeeded\",\"message\":{\"id\":\"msg_01Dumy2zp6ymYzsHjJ5xEpdw\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"claude-3-haiku-20240307\",\"content\":[{\"type\":\"text\",\"text\":\"The sky appears blue for a few key reasons:\\n\\n1. Scattering of sunlight by the atmosphere - As sunlight passes through the Earth's atmosphere, the shorter wavelengths of light (the blues and violets) get scattered more by the gas molecules in the air than the longer wavelengths (the reds and oranges). This selective scattering of the blue wavelengths is known as Rayleigh scattering, named after the physicist John Rayleigh.\\n\\n2. Composition of the atmosphere - The Earth's atmosphere is composed mainly of nitrogen and oxygen molecules. These molecules are just the right size to efficiently scatter the shorter blue wavelengths of sunlight, making the sky appear blue.\\n\\n3. Perception by the human eye - The human eye is more sensitive to the blue wavelengths, so the scattered blue light appears more dominant and vibrant to our eyes compared to the other scattered wavelengths.\\n\\nSo in summary, it is the physical process of Rayleigh scattering combined with the composition of the atmosphere and the human visual perception that makes the sky appear blue. The effect is most pronounced during the day when the sun's light is passing through more of the atmosphere.\"}],\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"usage\":{\"input_tokens\":13,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":259}}}}\n{\"custom_id\":\"bar\",\"result\":{\"type\":\"succeeded\",\"message\":{\"id\":\"msg_01BFAMXhx5nZEbbKyVqdzvQ1\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"claude-3-haiku-20240307\",\"content\":[{\"type\":\"text\",\"text\":\"There are a few reasons why the sea appears blue in color:\\n\\n1. Light Scattering - The main reason is the way light interacts with water molecules. When sunlight hits the water, the shorter wavelengths of light (blues and violets) get scattered more easily by the water molecules. This preferential scattering of blue light is known as the Rayleigh scattering effect, and it's the same phenomenon that makes the sky appear blue.\\n\\n2. Water Absorption - Water absorbs more of the longer wavelengths of the visible spectrum (reds and yellows) compared to the shorter blue wavelengths. This selective absorption contributes to the overall blue appearance.\\n\\n3. Pigments - Certain pigments and dissolved organic matter in ocean water can also influence the perceived color. Phytoplankton and other dissolved organic compounds can give the water a greenish or brownish tint in some areas.\\n\\n4. Depth and Clarity - The deeper and clearer the water, the more pronounced the blue color appears. Shallow waters or waters with a lot of suspended sediment tend to appear more green or turquoise.\\n\\nSo in summary, it is primarily the way water interacts with and absorbs different wavelengths of sunlight that gives the ocean its characteristic blue hue. The precise shade can vary depending on local conditions and composition of the water.\"}],\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"usage\":{\"input_tokens\":13,\"cache_creation_input_tokens\":0,\"cache_read_input_tokens\":0,\"output_tokens\":298}}}}"
   }
 
   @stream_mocks %{
@@ -119,6 +134,12 @@ defmodule Anthropix.Mock do
   end
 
   @spec respond(Plug.Conn.t(), term()) :: Plug.Conn.t()
+  def respond(conn, :batch_results) do
+    conn
+    |> put_resp_header("content-disposition", "attachment; filename=\"results.jsonl\"")
+    |> send_resp(200, @mocks[:batch_results])
+  end
+
   def respond(conn, name) when is_atom(name) do
     conn
     |> put_resp_header("content-type", "application/json")
