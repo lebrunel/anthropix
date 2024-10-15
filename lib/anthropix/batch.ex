@@ -83,7 +83,7 @@ defmodule Anthropix.Batch do
   ## Examples
 
   ```elixir
-  iex> Anthropix.Batch(client, [
+  iex> Anthropix.Batch.create(client, [
   ...>   %{custom_id: "foo", params: %{model: "claude-3-haiku-20240307", messages: [%{role: "user", content: "Why is the sky blue?"}]}},
   ...>   %{custom_id: "bar", params: %{model: "claude-3-haiku-20240307", messages: [%{role: "user", content: "Why is the sea blue?"}]}},
   ...> ])
