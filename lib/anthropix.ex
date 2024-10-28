@@ -555,7 +555,7 @@ defmodule Anthropix do
     end)
   end
 
-  defp stream_merge(res, %{"type" => "content_block_delta", "index" => i, "delta" => %{"type" => "input_json_delta"} = delta}) do
+  defp stream_merge(res, %{"type" => "content_block_delta", "index" => i, "delta" => %{"type" => "input_json_delta"}}) do
     update_in(res.body, fn body ->
       update_in(body, ["content"], fn content ->
         List.update_at(content, i, fn block ->
