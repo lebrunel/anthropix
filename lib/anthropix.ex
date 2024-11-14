@@ -494,20 +494,17 @@ defmodule Anthropix do
   @spec res(req_response()) :: response()
   defp res({:ok, %Task{} = task}), do: {:ok, task}
   defp res({:ok, enum}) when is_function(enum), do: {:ok, enum}
-  defp res({:ok, %{status: status, body: ""}}) when status in 200..299,
-    do: {:ok, %{}}
-
-  defp res({:ok, %{status: status, body: body}}) when status in 200..299 do
-    {:ok, body}
-  end
-
-  defp res({:ok, %{body: body}}) do
-    {:error, APIError.exception(body)}
-  end
-
-
-
+  defp res({:ok, %{status: status, body: ""} = response}) when status in 200..299,
+    do: {:ok, response.body}
+  defp res({:ok, %{status: status, body: body}}) when status in 200..299,
+    do: {:ok, body}
+  defp res({:ok, %{body: ""}}),
+    do: {:error, "Empty response received"}
+  defp res({:ok, %{body: body}}),
+    do: {:error, APIError.exception(body)}
   defp res({:error, error}), do: {:error, error}
+
+
 
   @sse_regex ~r/event:\s*(\w+)\ndata:\s*({.+})\n/
 
