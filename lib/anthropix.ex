@@ -494,16 +494,17 @@ defmodule Anthropix do
   @spec res(req_response()) :: response()
   defp res({:ok, %Task{} = task}), do: {:ok, task}
   defp res({:ok, enum}) when is_function(enum), do: {:ok, enum}
-
-  defp res({:ok, %{status: status, body: body}}) when status in 200..299 do
-    {:ok, body}
-  end
-
-  defp res({:ok, %{body: body}}) do
-    {:error, APIError.exception(body)}
-  end
-
+  defp res({:ok, %{status: status, body: ""} = response}) when status in 200..299,
+    do: {:ok, response.body}
+  defp res({:ok, %{status: status, body: body}}) when status in 200..299,
+    do: {:ok, body}
+  defp res({:ok, %{body: ""}}),
+    do: {:error, "Empty response received"}
+  defp res({:ok, %{body: body}}),
+    do: {:error, APIError.exception(body)}
   defp res({:error, error}), do: {:error, error}
+
+
 
   @sse_regex ~r/event:\s*(\w+)\ndata:\s*({.+})\n/
 
@@ -545,7 +546,7 @@ defmodule Anthropix do
     end)
   end
 
-  defp stream_merge(res, %{"type" => "content_block_delta", "index" => i, "delta" => delta}) do
+  defp stream_merge(res, %{"type" => "content_block_delta", "index" => i, "delta" => %{"type" => "text_delta"} = delta}) do
     update_in(res.body, fn body ->
       update_in(body, ["content"], fn content ->
         List.update_at(content, i, fn block ->
@@ -555,8 +556,40 @@ defmodule Anthropix do
     end)
   end
 
+  defp stream_merge(res, %{"type" => "content_block_delta", "index" => i, "delta" => %{"type" => "input_json_delta"} = delta}) do
+    update_in(res.body, fn body ->
+      update_in(body, ["content"], fn content ->
+        List.update_at(content, i, fn block ->
+          update_in(block, ["input"], fn input ->
+            case input do
+              nil -> %{"_partial_json" => delta["partial_json"]}
+              %{"_partial_json" => existing} -> %{"_partial_json" => existing <> delta["partial_json"]}
+              _ -> %{"_partial_json" => delta["partial_json"]}
+            end
+          end)
+        end)
+      end)
+    end)
+  end
+
   defp stream_merge(res, %{"type" => "message_delta", "delta" => delta}),
     do: update_in(res.body, & Map.merge(&1, delta))
+
+  defp stream_merge(res, %{"type" => "content_block_stop", "index" => i}) do
+    update_in(res.body, fn body ->
+      update_in(body, ["content"], fn content ->
+        List.update_at(content, i, fn block ->
+          case get_in(block, ["input", "_partial_json"]) do
+            nil -> block
+            "" -> block  # Handle empty JSON string
+            json_str ->
+              input = json_str |> Jason.decode!()
+              put_in(block, ["input"], input)
+          end
+        end)
+      end)
+    end)
+  end
 
   defp stream_merge(res, _data), do: res
 
