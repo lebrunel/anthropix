@@ -71,6 +71,63 @@ defmodule AnthropixTest do
       assert get_in(last, ["usage", "output_tokens"]) == 34
     end
 
+    test "generates a response with tool use" do
+      client = Mock.client(& Mock.respond(&1, :messages_tools))
+      assert {:ok, res} = Anthropix.chat(client, [
+        model: "claude-3-haiku-20240307",
+        messages: [
+          %{role: "user", content: "What is the weather in London?"}
+        ],
+        tools: [
+          %{
+            name: "get_weather",
+            description: "Fetches the weather for the given location.",
+            input_schema: %{
+              type: "object",
+              properties: %{
+                location: %{type: "string", description: "Location name - town, city or area."}
+              },
+              required: ["location"]
+            }
+          }
+        ]
+      ])
+
+      block = Enum.find(res["content"], & &1["type"] == "tool_use")
+      assert is_map(block)
+      assert get_in(block, ["name"]) == "get_weather"
+      assert get_in(block, ["input", "location"]) == "London"
+    end
+
+    test "streams a response with tool use" do
+      client = Mock.client(& Mock.stream(&1, :messages_tools))
+      assert {:ok, stream} = Anthropix.chat(client, [
+        model: "claude-3-haiku-20240307",
+        messages: [
+          %{role: "user", content: "What is the weather in London?"}
+        ],
+        tools: [
+          %{
+            name: "get_weather",
+            description: "Fetches the weather for the given location.",
+            input_schema: %{
+              type: "object",
+              properties: %{
+                location: %{type: "string", description: "Location name - town, city or area."}
+              },
+              required: ["location"]
+            }
+          }
+        ],
+        stream: true
+      ])
+      res = Enum.to_list(stream)
+      last = Enum.find(res, & &1["type"] == "message_delta")
+      assert is_list(res)
+      assert get_in(last, ["delta", "stop_reason"]) == "tool_use"
+      assert get_in(last, ["usage", "output_tokens"]) == 61
+    end
+
     test "returns error when model not found" do
       client = Mock.client(& Mock.respond(&1, 404))
       assert {:error, %APIError{type: "not_found"}} = Anthropix.chat(client, [

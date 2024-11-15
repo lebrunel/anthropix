@@ -19,6 +19,30 @@ defmodule Anthropix.Mock do
       "usage" => %{"input_tokens" => 18, "output_tokens" => 36}
     },
 
+    :messages_tools => %{
+      "content" => [
+        %{"text" => "Okay, let me check the weather for London:", "type" => "text"},
+        %{
+          "id" => "toolu_01C8aPF8bZPusgu3LvVAf4Mo",
+          "input" => %{"location" => "London"},
+          "name" => "get_weather",
+          "type" => "tool_use"
+        }
+      ],
+      "id" => "msg_01THGxy3R57vpDPKmqPmcALZ",
+      "model" => "claude-3-haiku-20240307",
+      "role" => "assistant",
+      "stop_reason" => "tool_use",
+      "stop_sequence" => nil,
+      "type" => "message",
+      "usage" => %{
+        "cache_creation_input_tokens" => 0,
+        "cache_read_input_tokens" => 0,
+        "input_tokens" => 348,
+        "output_tokens" => 65
+      }
+    },
+
     :batch_list => %{
       "data" => [
         %{
@@ -86,14 +110,14 @@ defmodule Anthropix.Mock do
   @stream_mocks %{
     messages: [
       %{"type" => "message_start", "message" => %{
-          "content" => [],
-          "id" => "msg_01AgC6AM5riFWbgj1ZoSgD1b",
-          "model" => "claude-3-sonnet-20240229",
-          "role" => "assistant",
-          "stop_reason" => nil,
-          "stop_sequence" => nil,
-          "type" => "message",
-          "usage" => %{"input_tokens" => 18, "output_tokens" => 1}
+        "content" => [],
+        "id" => "msg_01AgC6AM5riFWbgj1ZoSgD1b",
+        "model" => "claude-3-sonnet-20240229",
+        "role" => "assistant",
+        "stop_reason" => nil,
+        "stop_sequence" => nil,
+        "type" => "message",
+        "usage" => %{"input_tokens" => 18, "output_tokens" => 1}
       }},
       %{"type" => "content_block_start", "index" => 0, "content_block" => %{"text" => "", "type" => "text"}},
       %{"type" => "content_block_delta", "index" => 0, "delta" => %{"text" => "Here", "type" => "text_delta"}},
@@ -124,6 +148,36 @@ defmodule Anthropix.Mock do
       %{"type" => "content_block_delta", "index" => 0, "delta" => %{"text" => " beauty", "type" => "text_delta"}},
       %{"type" => "content_block_stop", "index" => 0},
       %{"type" => "message_delta", "delta" => %{"stop_reason" => "end_turn", "stop_sequence" => nil}, "usage" => %{"output_tokens" => 34}},
+      %{"type" => "message_stop"}
+    ],
+
+    messages_tools: [
+      %{"type" => "message_start", "message" => %{
+        "content" => [],
+        "id" => "msg_017cEgug4oBcJZ9BBpB4iFuS",
+        "model" => "claude-3-haiku-20240307",
+        "role" => "assistant",
+        "stop_reason" => nil,
+        "stop_sequence" => nil,
+        "type" => "message",
+        "usage" => %{"cache_creation_input_tokens" => 0, "cache_read_input_tokens" => 0, "input_tokens" => 348, "output_tokens" => 4}
+      }},
+      %{"type" => "content_block_start", "index" => 0, "content_block" => %{"text" => "", "type" => "text"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"text" => "Here is the weather", "type" => "text_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"text" => " for London:", "type" => "text_delta"}},
+      %{"type" => "content_block_stop", "index" => 0},
+      %{"type" => "content_block_start", "index" => 1, "content_block" => %{
+        "id" => "toolu_01HkwGv3jQLx1fGJV8qfskQZ",
+        "input" => %{},
+        "name" => "get_weather",
+        "type" => "tool_use"
+      }},
+      %{"type" => "content_block_delta", "index" => 1, "delta" => %{"partial_json" => "", "type" => "input_json_delta"}},
+      %{"type" => "content_block_delta", "index" => 1, "delta" => %{"partial_json" => "{\"location\"", "type" => "input_json_delta"}},
+      %{"type" => "content_block_delta", "index" => 1, "delta" => %{"partial_json" => ": \"Lond", "type" => "input_json_delta"}},
+      %{"type" => "content_block_delta", "index" => 1, "delta" => %{"partial_json" => "on\"}", "type" => "input_json_delta"}},
+      %{"type" => "content_block_stop", "index" => 1},
+      %{"type" => "message_delta", "delta" => %{"stop_reason" => "tool_use", "stop_sequence" => nil}, "usage" => %{"output_tokens" => 61}},
       %{"type" => "message_stop"}
     ]
   }
