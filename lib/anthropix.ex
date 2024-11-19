@@ -105,37 +105,36 @@ defmodule Anthropix do
 
   @typedoc "Client struct"
   @type client() :: %__MODULE__{
-    req: Req.Request.t()
-  }
+          req: Req.Request.t()
+        }
 
-
-  schema :cache_control, [
+  schema(:cache_control,
     type: [
       type: {:in, ["ephemeral"]},
-      required: true,
+      required: true
     ]
-  ]
+  )
 
-  schema :system_message_content, [
+  schema(:system_message_content,
     type: [
       type: {:in, ["text"]},
-      required: true,
+      required: true
     ],
     text: [
       type: :string,
-      required: true,
+      required: true
     ],
     cache_control: [
       type: :map,
       keys: schema(:cache_control).schema,
       doc: "Cache-control parameter."
     ]
-  ]
+  )
 
-  schema :chat_message_content, [
+  schema(:chat_message_content,
     type: [
-      type: {:in, ["text", "image", "tool_use", "tool_result"]},
-      required: true,
+      type: {:in, ["text", "image", "tool_use", "tool_result", "document"]},
+      required: true
     ],
     # text type
     text: [type: :string],
@@ -149,15 +148,14 @@ defmodule Anthropix do
     tool_use_id: [type: :string],
     is_error: [type: :boolean],
     content: [type: {:or, [:string, {:list, :map}]}],
-
     cache_control: [
       type: :map,
       keys: schema(:cache_control).schema,
       doc: "Cache-control parameter."
     ]
-  ]
+  )
 
-  schema :chat_message, [
+  schema(:chat_message,
     role: [
       type: :string,
       required: true,
@@ -167,10 +165,10 @@ defmodule Anthropix do
       type: {:or, [:string, {:list, {:map, schema(:chat_message_content).schema}}]},
       required: true,
       doc: "Message content, either a single string or an array of content blocks."
-    ],
-  ]
+    ]
+  )
 
-  schema :chat_tool, [
+  schema(:chat_tool,
     name: [
       type: :string,
       required: true,
@@ -184,16 +182,17 @@ defmodule Anthropix do
     input_schema: [
       type: :map,
       required: true,
-      doc: "JSON schema for the tool input shape that the model will produce in tool_use output content blocks."
+      doc:
+        "JSON schema for the tool input shape that the model will produce in tool_use output content blocks."
     ],
     cache_control: [
       type: :map,
       keys: schema(:cache_control).schema,
       doc: "Cache-control parameter."
     ]
-  ]
+  )
 
-  schema :chat_tool_choice, [
+  schema(:chat_tool_choice,
     type: [
       type: :string,
       required: true,
@@ -203,7 +202,7 @@ defmodule Anthropix do
       type: :string,
       doc: "The name of the tool to use."
     ]
-  ]
+  )
 
   @typedoc """
   Chat message
@@ -213,43 +212,43 @@ defmodule Anthropix do
   #{doc(:chat_message)}
   """
   @type message() :: %{
-    role: String.t(),
-    content: String.t() | list(content_block())
-  }
+          role: String.t(),
+          content: String.t() | list(content_block())
+        }
 
   @typedoc "Message content block."
   @type content_block() ::
-    content_text() |
-    content_media() |
-    content_tool_use() |
-    content_tool_result()
+          content_text()
+          | content_media()
+          | content_tool_use()
+          | content_tool_result()
 
   @type content_text() :: %{
-    type: String.t(),
-    text: String.t()
-  }
+          type: String.t(),
+          text: String.t()
+        }
 
   @type content_media() :: %{
-    type: String.t(),
-    source: %{
-      type: String.t(),
-      media_type: String.t(),
-      data: String.t(),
-    }
-  }
+          type: String.t(),
+          source: %{
+            type: String.t(),
+            media_type: String.t(),
+            data: String.t()
+          }
+        }
 
   @type content_tool_use() :: %{
-    type: String.t(),
-    id: String.t(),
-    name: String.t(),
-    input: %{optional(String.t()) => String.t()}
-  }
+          type: String.t(),
+          id: String.t(),
+          name: String.t(),
+          input: %{optional(String.t()) => String.t()}
+        }
 
   @type content_tool_result() :: %{
-    type: String.t(),
-    tool_use_id: String.t(),
-    content: %{optional(String.t()) => String.t()}
-  }
+          type: String.t(),
+          tool_use_id: String.t(),
+          content: %{optional(String.t()) => String.t()}
+        }
 
   @typedoc """
   Tool.
@@ -259,47 +258,47 @@ defmodule Anthropix do
   #{doc(:chat_tool)}
   """
   @type tool() :: %{
-    name: String.t(),
-    description: String.t(),
-    input_schema: input_schema(),
-  }
+          name: String.t(),
+          description: String.t(),
+          input_schema: input_schema()
+        }
 
   @typedoc "JSON schema for the tool `input` shape."
   @type input_schema() :: %{
-    :type => String.t(),
-    :properties => %{
-      optional(String.t()) => %{
-        optional(:enum) => list(String.t()),
-        type: String.t(),
-        description: String.t(),
-      }
-    },
-    optional(:required) => list(String.t())
-  }
+          :type => String.t(),
+          :properties => %{
+            optional(String.t()) => %{
+              optional(:enum) => list(String.t()),
+              type: String.t(),
+              description: String.t()
+            }
+          },
+          optional(:required) => list(String.t())
+        }
 
   @typedoc "Client response"
   @type response() ::
-    {:ok, map() | Enumerable.t() | Task.t()} |
-    {:error, term()}
+          {:ok, map() | Enumerable.t() | Task.t()}
+          | {:error, term()}
 
   @typedoc false
   @type req_response() ::
-    {:ok, Req.Response.t() | Task.t() | Enum.t()} |
-    {:error, term()}
-
+          {:ok, Req.Response.t() | Task.t() | Enum.t()}
+          | {:error, term()}
 
   @default_req_opts [
     base_url: "https://api.anthropic.com/v1",
     headers: [
       {"anthropic-version", "2023-06-01"},
-      {"user-agent", "anthropix/#{@version}"},
+      {"user-agent", "anthropix/#{@version}"}
     ],
-    receive_timeout: 60_000,
+    receive_timeout: 60_000
   ]
 
   @default_beta_tokens [
     "prompt-caching-2024-07-31",
     "message-batches-2024-09-24",
+    "pdfs-2024-09-25"
   ]
 
   @doc """
@@ -343,49 +342,49 @@ defmodule Anthropix do
     {betas, opts} = Keyword.pop(opts, :beta, @default_beta_tokens)
     {headers, opts} = Keyword.pop(opts, :headers, [])
 
-    req = @default_req_opts
-    |> Keyword.merge(opts)
-    |> Req.new()
-    |> Req.Request.put_header("x-api-key", api_key)
-    |> Req.Request.put_header("anthropic-beta", Enum.join(betas, ","))
-    |> Req.Request.put_headers(headers)
+    req =
+      @default_req_opts
+      |> Keyword.merge(opts)
+      |> Req.new()
+      |> Req.Request.put_header("x-api-key", api_key)
+      |> Req.Request.put_header("anthropic-beta", Enum.join(betas, ","))
+      |> Req.Request.put_headers(headers)
 
     struct(__MODULE__, req: req)
   end
 
-
-  schema :chat, [
+  schema(:chat,
     model: [
       type: :string,
       required: true,
-      doc: "The model that will complete your prompt.",
+      doc: "The model that will complete your prompt."
     ],
     messages: [
       type: {:list, {:map, schema(:chat_message).schema}},
       required: true,
-      doc: "Input messages.",
+      doc: "Input messages."
     ],
     system: [
       type: {:or, [:string, {:list, {:map, schema(:system_message_content).schema}}]},
-      doc: "System prompt.",
+      doc: "System prompt."
     ],
     max_tokens: [
       type: :integer,
       default: 4096,
-      doc: "The maximum number of tokens to generate before stopping.",
+      doc: "The maximum number of tokens to generate before stopping."
     ],
     metadata: [
       type: :map,
-      doc: "A map describing metadata about the request.",
+      doc: "A map describing metadata about the request."
     ],
     stop_sequences: [
       type: {:list, :string},
-      doc: "Custom text sequences that will cause the model to stop generating.",
+      doc: "Custom text sequences that will cause the model to stop generating."
     ],
     stream: [
       type: {:or, [:boolean, :pid]},
       default: false,
-      doc: "Whether to incrementally stream the response using server-sent events.",
+      doc: "Whether to incrementally stream the response using server-sent events."
     ],
     temperature: [
       type: :float,
@@ -393,7 +392,7 @@ defmodule Anthropix do
     ],
     tools: [
       type: {:list, {:map, schema(:chat_tool).schema}},
-      doc: "A list of tools the model may call.",
+      doc: "A list of tools the model may call."
     ],
     tool_choice: [
       type: :map,
@@ -407,8 +406,8 @@ defmodule Anthropix do
     top_p: [
       type: :float,
       doc: "Amount of randomness injected into the response."
-    ],
-  ]
+    ]
+  )
 
   @doc """
   Chat with Claude. Send a list of structured input messages with text and/or
@@ -476,7 +475,7 @@ defmodule Anthropix do
     if stream_opt do
       opts =
         opts
-        |> Keyword.update!(:json, & Map.put(&1, :stream, true))
+        |> Keyword.update!(:json, &Map.put(&1, :stream, true))
         |> Keyword.put(:into, stream_handler(dest))
 
       task = Task.async(fn -> Req.request(req, opts) |> res() end)
@@ -494,17 +493,20 @@ defmodule Anthropix do
   @spec res(req_response()) :: response()
   defp res({:ok, %Task{} = task}), do: {:ok, task}
   defp res({:ok, enum}) when is_function(enum), do: {:ok, enum}
+
   defp res({:ok, %{status: status, body: ""} = response}) when status in 200..299,
     do: {:ok, response.body}
+
   defp res({:ok, %{status: status, body: body}}) when status in 200..299,
     do: {:ok, body}
+
   defp res({:ok, %{body: ""}}),
     do: {:error, "Empty response received"}
+
   defp res({:ok, %{body: body}}),
     do: {:error, APIError.exception(body)}
+
   defp res({:error, error}), do: {:error, error}
-
-
 
   @sse_regex ~r/event:\s*(\w+)\ndata:\s*({.+})\n/
 
@@ -514,7 +516,7 @@ defmodule Anthropix do
     "content_block_delta",
     "content_block_stop",
     "message_delta",
-    "message_stop",
+    "message_stop"
   ]
 
   # Returns a callback to handle streaming responses
@@ -524,7 +526,7 @@ defmodule Anthropix do
       res =
         @sse_regex
         |> Regex.scan(data)
-        |> Enum.filter(& match?([_, event, _data] when event in @sse_events, &1))
+        |> Enum.filter(&match?([_, event, _data] when event in @sse_events, &1))
         |> Enum.map(fn [_, _event, data] -> Jason.decode!(data) end)
         |> Enum.reduce(res, fn data, res ->
           Process.send(pid, {self(), {:data, data}}, [])
@@ -540,31 +542,48 @@ defmodule Anthropix do
   defp stream_merge(res, %{"type" => "message_start", "message" => message}),
     do: put_in(res.body, message)
 
-  defp stream_merge(res, %{"type" => "content_block_start", "index" => i, "content_block" => block}) do
+  defp stream_merge(res, %{
+         "type" => "content_block_start",
+         "index" => i,
+         "content_block" => block
+       }) do
     update_in(res.body, fn body ->
-      update_in(body, ["content"], & List.insert_at(&1, i, block))
+      update_in(body, ["content"], &List.insert_at(&1, i, block))
     end)
   end
 
-  defp stream_merge(res, %{"type" => "content_block_delta", "index" => i, "delta" => %{"type" => "text_delta"} = delta}) do
+  defp stream_merge(res, %{
+         "type" => "content_block_delta",
+         "index" => i,
+         "delta" => %{"type" => "text_delta"} = delta
+       }) do
     update_in(res.body, fn body ->
       update_in(body, ["content"], fn content ->
         List.update_at(content, i, fn block ->
-          update_in(block, ["text"], & &1 <> delta["text"])
+          update_in(block, ["text"], &(&1 <> delta["text"]))
         end)
       end)
     end)
   end
 
-  defp stream_merge(res, %{"type" => "content_block_delta", "index" => i, "delta" => %{"type" => "input_json_delta"} = delta}) do
+  defp stream_merge(res, %{
+         "type" => "content_block_delta",
+         "index" => i,
+         "delta" => %{"type" => "input_json_delta"} = delta
+       }) do
     update_in(res.body, fn body ->
       update_in(body, ["content"], fn content ->
         List.update_at(content, i, fn block ->
           update_in(block, ["input"], fn input ->
             case input do
-              nil -> %{"_partial_json" => delta["partial_json"]}
-              %{"_partial_json" => existing} -> %{"_partial_json" => existing <> delta["partial_json"]}
-              _ -> %{"_partial_json" => delta["partial_json"]}
+              nil ->
+                %{"_partial_json" => delta["partial_json"]}
+
+              %{"_partial_json" => existing} ->
+                %{"_partial_json" => existing <> delta["partial_json"]}
+
+              _ ->
+                %{"_partial_json" => delta["partial_json"]}
             end
           end)
         end)
@@ -573,15 +592,20 @@ defmodule Anthropix do
   end
 
   defp stream_merge(res, %{"type" => "message_delta", "delta" => delta}),
-    do: update_in(res.body, & Map.merge(&1, delta))
+    do: update_in(res.body, &Map.merge(&1, delta))
 
   defp stream_merge(res, %{"type" => "content_block_stop", "index" => i}) do
     update_in(res.body, fn body ->
       update_in(body, ["content"], fn content ->
         List.update_at(content, i, fn block ->
           case get_in(block, ["input", "_partial_json"]) do
-            nil -> block
-            "" -> block  # Handle empty JSON string
+            nil ->
+              block
+
+            # Handle empty JSON string
+            "" ->
+              block
+
             json_str ->
               input = json_str |> Jason.decode!()
               put_in(block, ["input"], input)
@@ -620,5 +644,4 @@ defmodule Anthropix do
 
   @doc false
   def chat_schema, do: schema(:chat).schema
-
 end
