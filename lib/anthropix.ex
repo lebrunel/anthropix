@@ -134,7 +134,7 @@ defmodule Anthropix do
 
   schema :chat_message_content, [
     type: [
-      type: {:in, ["text", "image", "tool_use", "tool_result"]},
+      type: {:in, ["text", "image", "tool_use", "tool_result", "document"]},
       required: true,
     ],
     # text type
@@ -300,6 +300,7 @@ defmodule Anthropix do
   @default_beta_tokens [
     "prompt-caching-2024-07-31",
     "message-batches-2024-09-24",
+    "pdfs-2024-09-25",
   ]
 
   @doc """
