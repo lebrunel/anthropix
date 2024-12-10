@@ -144,7 +144,7 @@ defmodule Anthropix do
     # tool_use
     id: [type: :string],
     name: [type: :string],
-    input: [type: :map],
+    input: [type: {:map, :string, :any}],
     # tool_result
     tool_use_id: [type: :string],
     is_error: [type: :boolean],
