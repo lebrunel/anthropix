@@ -128,6 +128,31 @@ defmodule AnthropixTest do
       assert get_in(last, ["usage", "output_tokens"]) == 61
     end
 
+    test "handles nested params as string keyed-maps" do
+      client = Mock.client(& Mock.respond(&1, :messages))
+      assert {:ok, _res} = Anthropix.chat(client, [
+        model: "claude-3-sonnet-20240229",
+        messages: [
+          %{role: "user", content: "What is the weather like in San Francisco?"},
+          %{role: "assistant", content: [
+            %{
+              "type" => "tool_use",
+              "id" => "toolu_01A09q90qw90lq917835lq9",
+              "name" => "get_weather",
+              "input" => %{"location" => "San Francisco, CA"}
+            }
+          ]},
+          %{role: "user", content: [
+            %{
+              "type" => "tool_result",
+              "tool_use_id" => "toolu_01A09q90qw90lq917835lq9",
+              "content" => "15 degrees"
+            }
+          ]}
+        ]
+      ])
+    end
+
     test "returns error when model not found" do
       client = Mock.client(& Mock.respond(&1, 404))
       assert {:error, %APIError{type: "not_found"}} = Anthropix.chat(client, [
