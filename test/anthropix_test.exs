@@ -128,7 +128,7 @@ defmodule AnthropixTest do
       assert get_in(last, ["usage", "output_tokens"]) == 61
     end
 
-    test "handles nested params as string keyed-maps" do
+    test "allow nested params as string keyed maps" do
       client = Mock.client(& Mock.respond(&1, :messages))
       assert {:ok, _res} = Anthropix.chat(client, [
         model: "claude-3-sonnet-20240229",

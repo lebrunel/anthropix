@@ -108,54 +108,7 @@ defmodule Anthropix do
     req: Req.Request.t()
   }
 
-
-  schema :cache_control, [
-    type: [
-      type: {:in, ["ephemeral"]},
-      required: true,
-    ]
-  ]
-
-  schema :system_message_content, [
-    type: [
-      type: {:in, ["text"]},
-      required: true,
-    ],
-    text: [
-      type: :string,
-      required: true,
-    ],
-    cache_control: [
-      type: :map,
-      keys: schema(:cache_control).schema,
-      doc: "Cache-control parameter."
-    ]
-  ]
-
-  schema :chat_message_content, [
-    type: [
-      type: {:in, ["text", "image", "tool_use", "tool_result", "document"]},
-      required: true,
-    ],
-    # text type
-    text: [type: :string],
-    # image type
-    source: [type: :map],
-    # tool_use
-    id: [type: :string],
-    name: [type: :string],
-    input: [type: :map],
-    # tool_result
-    tool_use_id: [type: :string],
-    is_error: [type: :boolean],
-    content: [type: {:or, [:string, {:list, :map}]}],
-
-    cache_control: [
-      type: :map,
-      keys: schema(:cache_control).schema,
-      doc: "Cache-control parameter."
-    ]
-  ]
+  @permissive_map {:map, {:or, [:atom, :string]}, :any}
 
   schema :chat_message, [
     role: [
@@ -164,7 +117,7 @@ defmodule Anthropix do
       doc: "The role of the message, either `user` or `assistant`."
     ],
     content: [
-      type: {:or, [:string, {:list, {:map, schema(:chat_message_content).schema}}]},
+      type: {:or, [:string, {:list, @permissive_map}]},
       required: true,
       doc: "Message content, either a single string or an array of content blocks."
     ],
@@ -182,13 +135,12 @@ defmodule Anthropix do
       doc: "Description of the tool"
     ],
     input_schema: [
-      type: :map,
+      type: @permissive_map,
       required: true,
       doc: "JSON schema for the tool input shape that the model will produce in tool_use output content blocks."
     ],
     cache_control: [
-      type: :map,
-      keys: schema(:cache_control).schema,
+      type: @permissive_map,
       doc: "Cache-control parameter."
     ]
   ]
@@ -367,7 +319,7 @@ defmodule Anthropix do
       doc: "Input messages.",
     ],
     system: [
-      type: {:or, [:string, {:list, {:map, schema(:system_message_content).schema}}]},
+      type: {:or, [:string, {:list, @permissive_map}]},
       doc: "System prompt.",
     ],
     max_tokens: [
@@ -376,7 +328,7 @@ defmodule Anthropix do
       doc: "The maximum number of tokens to generate before stopping.",
     ],
     metadata: [
-      type: :map,
+      type: @permissive_map,
       doc: "A map describing metadata about the request.",
     ],
     stop_sequences: [
