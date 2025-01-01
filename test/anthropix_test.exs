@@ -155,7 +155,7 @@ defmodule AnthropixTest do
 
     test "returns error when model not found" do
       client = Mock.client(& Mock.respond(&1, 404))
-      assert {:error, %APIError{type: "not_found"}} = Anthropix.chat(client, [
+      assert {:error, %APIError{status: 404, type: "not_found"}} = Anthropix.chat(client, [
         model: "not-found",
         messages: [
           %{role: "user", content: "Write a haiku about the colour of the sky."}

@@ -248,8 +248,8 @@ defmodule Anthropix.Batch do
     end
   end
 
-  defp res({:ok, %{body: body}}) do
-    {:error, APIError.exception(body)}
+  defp res({:ok, resp}) do
+    {:error, APIError.exception(resp)}
   end
 
   defp res({:error, error}), do: {:error, error}
@@ -276,8 +276,8 @@ defmodule Anthropix.Batch do
       {^ref, {:ok, %Req.Response{status: status}}} when status in 200..299 ->
         {:halt, task}
 
-      {^ref, {:ok, %Req.Response{body: body}}} ->
-        raise APIError.exception(body)
+      {^ref, {:ok, %Req.Response{}=resp}} ->
+        raise APIError.exception(resp)
 
       {^ref, {:error, error}} ->
         raise error

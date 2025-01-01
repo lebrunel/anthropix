@@ -56,7 +56,7 @@ defmodule Anthropix.BatchTest do
 
     test "returns 404 for unknown batch id" do
       client = Mock.client(& Mock.respond(&1, 404))
-      assert {:error, %APIError{type: "not_found"}} = Batch.show(client, "invalid_id")
+      assert {:error, %APIError{status: 404, type: "not_found"}} = Batch.show(client, "invalid_id")
     end
   end
 
@@ -98,7 +98,7 @@ defmodule Anthropix.BatchTest do
 
     test "returns 404 for unknown batch id" do
       client = Mock.client(& Mock.respond(&1, 404))
-      assert {:error, %APIError{type: "not_found"}} = Batch.results(client, "invalid_id")
+      assert {:error, %APIError{status: 404, type: "not_found"}} = Batch.results(client, "invalid_id")
     end
 
     test "with stream: true, returns a lazy enumerable" do
