@@ -451,10 +451,8 @@ defmodule Anthropix do
     do: {:ok, response.body}
   defp res({:ok, %{status: status, body: body}}) when status in 200..299,
     do: {:ok, body}
-  defp res({:ok, %{body: ""}}),
-    do: {:error, "Empty response received"}
-  defp res({:ok, %{body: body}}),
-    do: {:error, APIError.exception(body)}
+  defp res({:ok, resp}),
+    do: {:error, APIError.exception(resp)}
   defp res({:error, error}), do: {:error, error}
 
 
