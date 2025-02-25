@@ -94,9 +94,8 @@ stream
 ```
 
 Because the above approach builds the `t:Enumerable.t/0` by calling `receive`, using this approach inside GenServer callbacks may cause the GenServer to misbehave. Setting the `:stream` option to a `t:pid/0` returns a `t:Task.t/0` which will send messages to the specified process.
-```
 
-# License
+## License
 
 This package is open source and released under the [Apache-2 License](https://github.com/lebrunel/ollama/blob/master/LICENSE).
 
