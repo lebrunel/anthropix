@@ -7,7 +7,7 @@ defmodule Anthropix.MixProject do
       name: "Anthropix",
       description: "Unofficial Anthropic API client for Elixir. Integrate Claude, Anthropic's powerful language model, into your applications.",
       source_url: "https://github.com/lebrunel/anthropix",
-      version: "0.5.0",
+      version: "0.6.0",
       elixir: "~> 1.13",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -36,7 +36,7 @@ defmodule Anthropix.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.35", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.37", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
       {:nimble_options, "~> 1.1"},
       {:plug, "~> 1.16", only: :test},

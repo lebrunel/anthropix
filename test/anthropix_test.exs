@@ -128,6 +128,59 @@ defmodule AnthropixTest do
       assert get_in(last, ["usage", "output_tokens"]) == 61
     end
 
+    test "generates a response with extended thinking" do
+      client = Mock.client(& Mock.respond(&1, :messages_thinking))
+      assert {:ok, res} = Anthropix.chat(client, [
+        model: "claude-3-7-sonnet-20250219",
+        messages: [
+          %{role: "user", content: "How many R's are there in strawberry?"}
+        ],
+        thinking: %{
+          type: "enabled",
+          budget_tokens: 1024,
+        },
+        max_tokens: 2048
+      ])
+      block = Enum.find(res["content"], & &1["type"] == "thinking")
+      assert is_map(block)
+      assert get_in(block, ["thinking"]) |> is_binary()
+      assert get_in(block, ["signature"]) |> is_binary()
+    end
+
+    test "streams a response with extended thinking" do
+      client = Mock.client(& Mock.stream(&1, :messages_thinking))
+      assert {:ok, stream} = Anthropix.chat(client, [
+        model: "claude-3-7-sonnet-20250219",
+        messages: [
+          %{role: "user", content: "How many R's are there in strawberry?"}
+        ],
+        thinking: %{
+          type: "enabled",
+          budget_tokens: 1024,
+        },
+        max_tokens: 2048,
+        stream: true
+      ])
+
+      res = Enum.to_list(stream)
+      assert Enum.any?(res, & &1["type"] == "content_block_delta" && get_in(&1, ["delta", "type"]) == "thinking_delta")
+    end
+
+    test "throws error if thinking tokens budget exceeds max_tokens" do
+      client = Mock.client(& Mock.respond(&1, 400))
+      assert {:error, %APIError{status: 400, type: "bad_request"}} = Anthropix.chat(client, [
+        model: "claude-3-7-sonnet-20250219",
+        messages: [
+          %{role: "user", content: "Are there an infinite number of prime numbers such that n mod 4 == 3?"}
+        ],
+        thinking: %{
+          type: "enabled",
+          budget_tokens: 4096,
+        },
+        max_tokens: 1024
+      ])
+    end
+
     test "allow nested params as string keyed maps" do
       client = Mock.client(& Mock.respond(&1, :messages))
       assert {:ok, _res} = Anthropix.chat(client, [

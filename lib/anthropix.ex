@@ -11,6 +11,7 @@ defmodule Anthropix do
 
   - ✅ API client fully implementing the [Anthropic API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api)
   - 🧰 Tool use (function calling)
+  - 🧠 Extended thinking
   - ⚡ Prompt caching
   - 📦 Message batching (`Anthropix.Batch`)
   - 🛜 Streaming API requests
@@ -35,13 +36,13 @@ defmodule Anthropix do
   > #### Beta features {: .info}
   >
   > Anthropic frequently ship new features under a beta flag, requiring headers
-  to be added to your requests to take advantage of the feature. This library
-  currently enables the following beta headers by default:
+  to be added to your requests to take advantage of the feature.
   >
-  > - `prompt-caching-2024-07-31`
-  > - `message-batches-2024-09-24`
+  > If required, beta headers can be added with `init/2`.
   >
-  > If required, beta headers can be customised with `init/2`.
+  > ```elixir
+  > client = Anthropix.init(beta: ["output-128k-2025-02-19"])
+  > ```
 
   ### Initiate a client.
 
@@ -154,6 +155,9 @@ defmodule Anthropix do
     name: [
       type: :string,
       doc: "The name of the tool to use."
+    ],
+    disable_parallel_tool_use: [
+      type: :boolean
     ]
   ]
 
@@ -249,11 +253,8 @@ defmodule Anthropix do
     receive_timeout: 60_000,
   ]
 
-  @default_beta_tokens [
-    "prompt-caching-2024-07-31",
-    "message-batches-2024-09-24",
-    "pdfs-2024-09-25",
-  ]
+  # Current none active by default
+  @default_beta_tokens []
 
   @doc """
   Calling `init/1` without passing an API key, creates a new Anthropix API
@@ -321,6 +322,14 @@ defmodule Anthropix do
     system: [
       type: {:or, [:string, {:list, @permissive_map}]},
       doc: "System prompt.",
+    ],
+    thinking: [
+      type: :map,
+      keys: [
+        type: [type: {:in, ["enabled"]}],
+        budget_tokens: [type: :non_neg_integer]
+      ],
+      doc: "Enable thinking mode and the budget of tokens to use."
     ],
     max_tokens: [
       type: :integer,

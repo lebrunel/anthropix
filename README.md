@@ -10,6 +10,7 @@ Anthropix is an open-source Elixir client for the Anthropic API, providing a sim
 
 - ✅ API client fully implementing the [Anthropic API](https://docs.anthropic.com/claude/reference/getting-started-with-the-api)
 - 🧰 Tool use (function calling)
+- 🧠 Extended thinking
 - ⚡ Prompt caching
 - 📦 Message batching
 - 🛜 Streaming API requests
@@ -33,14 +34,13 @@ end
 > [!NOTE]
 > #### Beta features
 >
-> Anthropic frequently ship new features under a beta flag, requiring headers
-to be added to your requests to take advantage of the feature. This library
-currently enables the following beta headers by default:
+> Anthropic frequently ship new features under a beta flag, requiring headers to be added to your requests to take advantage of the feature.
 >
-> - `prompt-caching-2024-07-31`
-> - `message-batches-2024-09-24`
+> If required, beta headers can be added with `init/2`.
 >
-> If required, beta headers can be customised with `init/2`.
+> ```elixir
+> client = Anthropix.init(beta: ["output-128k-2025-02-19"])
+> ```
 
 For more examples, refer to the [Anthropix documentation](https://hexdocs.pm/anthropix).
 

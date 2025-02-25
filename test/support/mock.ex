@@ -43,6 +43,29 @@ defmodule Anthropix.Mock do
       }
     },
 
+    :messages_thinking => %{
+      "content" => [
+        %{
+          "signature" => "EuYBCkQYAiJAOlUl3hxNSxKkGObU7125QRAymecmp7a1cTXpmwNv6Jx8G022M+qnNlx7o9Mq03cM2P4f/n+RN5hfk2v16rNWihIMUTgK+W9in5eBdxJMGgyeHz2pYd8PU8rXNXsiME+yUYUlBBqZ5dtT2FFOjqqSDOxd4EWhl3X12Xa135wNi+lqfr/X0vsMxvr5YUxMvypQupR16mWkWuOP2QyM7gTwl63VdYYKPjlQlha3kCLqjNn4Ncm/g8wJ2QpJcU+lOMx5Zddi/n4oT+pW5yxMJW7pzcZWEmlqZAH3K4qJ6/81gMM=",
+          "thinking" => "I need to count the number of letter \"R\"s in the word \"strawberry\".\n\nLet me spell it out: s-t-r-a-w-b-e-r-r-y\n\nNow I'll count the R's:\n1. First \"r\" after \"t\"\n2. Second \"r\" after \"e\"\n3. Third \"r\" before \"y\"\n\nSo there are 3 R's in the word \"strawberry\".",
+          "type" => "thinking"
+        },
+        %{"text" => "There are 3 R's in the word \"strawberry\".", "type" => "text"}
+      ],
+      "id" => "msg_01SWbnGuMmnusNsWSEoArzxZ",
+      "model" => "claude-3-7-sonnet-20250219",
+      "role" => "assistant",
+      "stop_reason" => "end_turn",
+      "stop_sequence" => nil,
+      "type" => "message",
+      "usage" => %{
+        "cache_creation_input_tokens" => 0,
+        "cache_read_input_tokens" => 0,
+        "input_tokens" => 45,
+        "output_tokens" => 129
+      }
+    },
+
     :batch_list => %{
       "data" => [
         %{
@@ -178,6 +201,38 @@ defmodule Anthropix.Mock do
       %{"type" => "content_block_delta", "index" => 1, "delta" => %{"partial_json" => "on\"}", "type" => "input_json_delta"}},
       %{"type" => "content_block_stop", "index" => 1},
       %{"type" => "message_delta", "delta" => %{"stop_reason" => "tool_use", "stop_sequence" => nil}, "usage" => %{"output_tokens" => 61}},
+      %{"type" => "message_stop"}
+    ],
+
+    messages_thinking: [
+      %{"type" => "message_start", "message" => %{
+        "content" => [],
+        "id" => "msg_01GagrVPbxkxRgAPP8J74FyM",
+        "model" => "claude-3-7-sonnet-20250219",
+        "role" => "assistant",
+        "stop_reason" => nil,
+        "stop_sequence" => nil,
+        "type" => "message",
+        "usage" => %{"cache_creation_input_tokens" => 0, "cache_read_input_tokens" => 0, "input_tokens" => 45, "output_tokens" => 8}
+      }},
+      %{"type" => "content_block_start", "index" => 0, "content_block" => %{"signature" => "", "thinking" => "", "type" => "thinking"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => "Let me count the number of letter", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => " 'r's in the word \"straw", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => "berry\".\n\nThe word \"strawberry\" is", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => " spelled: s-t-r-a-w-b-", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => "e-r-r-y\n\nI see", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => " the letter 'r' in the", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => " following positions:\n- 3rd position:", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => " \"str\"\n- 8th position: \"straw", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => "ber\"\n- 9th position: \"", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => "strawberr\"\n\nSo there are 3", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"thinking" => " r's in \"strawberry\".", "type" => "thinking_delta"}},
+      %{"type" => "content_block_delta", "index" => 0, "delta" => %{"signature" => "EuYBCkQYAiJApKyEzxcNGnvxbktXpkSeaaQRqSPonVuNTbvhWOPAeFQ0HKRGlKrVgE4NQi+0zTTlEdnbUDUks8lzMUK2k/MSIhIMDNNdtCKVjAzRaEGyGgwzqFDl27GgpV9ig1MiMIpYiv8Xn3ICpy/MyZFzRgQ1WrV/rw4iQfpk5G23nCLNlOoQyUFMl16caZiHehF1GCpQZyta9Vp0y2rWgmYrYyubCQJ61duztX2V3ahGVipRTodlmmRSzKeCNgI2nCFYnC9lUfk1o8MXGwUBmrBo6fzMMjpGbA0/2bekmUJq/mIL2kU=", "type" => "signature_delta"}},
+      %{"type" => "content_block_stop", "index" => 0},
+      %{"type" => "content_block_start", "index" => 1, "content_block" => %{"text" => "", "type" => "text"}},
+      %{"type" => "content_block_delta", "index" => 1, "delta" => %{"text" => "There are 3 r's in the word \"strawberry\".", "type" => "text_delta"}},
+      %{"type" => "content_block_stop", "index" => 1},
+      %{"type" => "message_delta", "delta" => %{"stop_reason" => "end_turn", "stop_sequence" => nil}, "usage" => %{"output_tokens" => 134}},
       %{"type" => "message_stop"}
     ]
   }
