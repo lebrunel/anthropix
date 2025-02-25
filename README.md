@@ -24,7 +24,7 @@ The package can be installed by adding `anthropix` to your list of dependencies 
 ```elixir
 def deps do
   [
-    {:anthropix, "~> 0.5"}
+    {:anthropix, "~> 0.6"}
   ]
 end
 ```
