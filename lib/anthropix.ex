@@ -474,6 +474,7 @@ defmodule Anthropix do
         {headers ++ [{"anthropic-beta", Enum.join(betas, ",")}], opts}
       {betas, opts} when is_binary(betas) ->
         {headers ++ [{"anthropic-beta", betas}], opts}
+      _ -> {headers, opts}
     end
   end
 
