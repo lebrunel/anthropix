@@ -285,6 +285,8 @@ defmodule Anthropix do
   given API key. Optionally, a keyword list of options can be passed through to
   `Req.new/1`.
 
+  ##
+
   ## Examples
 
   ```elixir
@@ -294,14 +296,12 @@ defmodule Anthropix do
   """
   @spec init(String.t(), keyword()) :: client()
   def init(api_key, opts \\ []) when is_binary(api_key) do
-    {betas, opts} = Keyword.pop(opts, :beta, @default_beta_tokens)
-    {headers, opts} = Keyword.pop(opts, :headers, [])
+    {headers, opts} = pop_headers(opts)
 
     req = @default_req_opts
     |> Keyword.merge(opts)
     |> Req.new()
     |> Req.Request.put_header("x-api-key", api_key)
-    |> Req.Request.put_header("anthropic-beta", Enum.join(betas, ","))
     |> Req.Request.put_headers(headers)
 
     struct(__MODULE__, req: req)
@@ -464,7 +464,18 @@ defmodule Anthropix do
     do: {:error, APIError.exception(resp)}
   defp res({:error, error}), do: {:error, error}
 
-
+  # Pop headers out of options given to init/2
+  @spec pop_headers(keyword()) :: {list(), keyword()}
+  defp pop_headers(opts) do
+    {headers, opts} = Keyword.pop(opts, :headers, [])
+    case Keyword.pop(opts, :beta, @default_beta_tokens) do
+      {[], opts} -> {headers, opts}
+      {betas, opts} when is_list(betas) ->
+        {headers ++ [{"anthropic-beta", Enum.join(betas, ",")}], opts}
+      {betas, opts} when is_binary(betas) ->
+        {headers ++ [{"anthropic-beta", betas}], opts}
+    end
+  end
 
   @sse_regex ~r/event:\s*(\w+)\ndata:\s*({.+})\n/
 
