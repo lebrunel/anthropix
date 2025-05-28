@@ -39,8 +39,10 @@ defmodule Anthropix.MixProject do
       {:ex_doc, "~> 0.37", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
       {:nimble_options, "~> 1.1"},
+      {:peri, "~> 0.3"},
       {:plug, "~> 1.16", only: :test},
       {:req, "~> 0.5"},
+      {:xema, "~> 0.17"},
     ]
   end
 
