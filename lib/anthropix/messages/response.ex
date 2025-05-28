@@ -1,6 +1,7 @@
 defmodule Anthropix.Messages.Response do
   import Peri
   import Anthropix.Utils.MapUtils, only: [safe_atomize_keys: 1]
+  alias Anthropix.Message
 
   defstruct [:id, :type, :role, :content, :model, :stop_reason, :stop_sequence, :usage, :container]
 
@@ -8,7 +9,7 @@ defmodule Anthropix.Messages.Response do
     id: String.t(),
     type: String.t(),
     role: String.t(),
-    content: list(), # todo typespecs for message conttent blocks
+    content: list(Message.content_block()),
     model: String.t(),
     stop_reason: String.t() | nil,
     stop_sequence: String.t() | nil,
@@ -35,7 +36,7 @@ defmodule Anthropix.Messages.Response do
     id: {:required, :string},
     type: {:required, {:literal, "message"}},
     role: {:required, {:literal, "assistant"}},
-    content: {:required, {:list, :map}}, # todo peri schemas for content blocks
+    content: {:required, {:list, Message.get_schema(:content_block)}},
     model: {:required, :string},
     stop_reason: :string,
     stop_sequence: :string,
