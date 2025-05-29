@@ -30,7 +30,8 @@ defmodule Anthropix.MessageTest do
     %{type: "code_execution_tool_result", tool_use_id: "test", content: %{
       type: "code_execution_tool_result_error",
       error_code: "test"
-    }}
+    }},
+    %{type: "container_upload", file_id: "test"}
   ]
 
   describe "new/1" do
