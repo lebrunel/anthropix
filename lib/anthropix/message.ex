@@ -1,5 +1,6 @@
 defmodule Anthropix.Message do
   import Peri
+  alias Anthropix.Messages
 
   defstruct [:role, :content]
 
@@ -26,20 +27,23 @@ defmodule Anthropix.Message do
   @type text_content() :: %{
     :type => String.t(),
     :text => String.t(),
-    optional(:cache_control) => map(),  # todo expand
-    optional(:citations) => list(map()) # todo expand
+    optional(:cache_control) => Messages.Request.cache_control(),
+    optional(:citations) => list(citation())
   }
 
   @type image_content() :: %{
     :type => String.t(),
-    :source => map(),                   # todo expand
-    optional(:cache_control) => map(),  # todo expand
+    :source => source(),
+    optional(:cache_control) => Messages.Request.cache_control()
   }
 
   @type document_content() :: %{
     :type => String.t(),
-    :source => map(),                   # todo expand
-    optional(:cache_control) => map(),  # todo expand
+    :source => source(),
+    optional(:title) => String.t(),
+    optional(:context) => String.t(),
+    optional(:cache_control) => Messages.Request.cache_control(),
+    optional(:citations) => list(citation())
   }
 
   @type thinking() :: %{
@@ -58,7 +62,7 @@ defmodule Anthropix.Message do
     :id => String.t(),
     :name => String.t(),
     :input => String.t(),
-    optional(:cache_control) => map(),  # todo expand
+    optional(:cache_control) => Messages.Request.cache_control()
   }
 
   @type tool_result() :: %{
@@ -66,7 +70,7 @@ defmodule Anthropix.Message do
     :tool_use_id => String.t(),
     :content => String.t() | list(text_content() | image_content()),
     optional(:is_error) => boolean(),
-    optional(:cache_control) => map(),  # todo expand
+    optional(:cache_control) => Messages.Request.cache_control()
   }
 
   @type mcp_tool_use() :: %{
@@ -75,7 +79,7 @@ defmodule Anthropix.Message do
     :name => String.t(),
     :server_name => String.t(),
     :input => map(),
-    optional(:cache_control) => map(),  # todo expand
+    optional(:cache_control) => Messages.Request.cache_control()
   }
 
   @type mcp_tool_result() :: %{
@@ -83,7 +87,7 @@ defmodule Anthropix.Message do
     :tool_use_id => String.t(),
     :content => String.t() | list(text_content()),
     optional(:is_error) => boolean(),
-    optional(:cache_control) => map(),  # todo expand
+    optional(:cache_control) => Messages.Request.cache_control()
   }
 
   @type server_use_tool() :: %{
@@ -91,28 +95,64 @@ defmodule Anthropix.Message do
     :id => String.t(),
     :name => String.t(),
     :input => map(),
-    optional(:cache_control) => map(),  # todo expand
+    optional(:cache_control) => Messages.Request.cache_control()
   }
 
   @type web_search_tool_result() :: %{
     :type => String.t(),
     :tool_use_id => String.t(),
     :content => list(map()) | map(),
-    optional(:cache_control) => map(),  # todo expand
+    optional(:cache_control) => Messages.Request.cache_control()
   }
 
   @type code_execution_tool_result() :: %{
     :type => String.t(),
     :tool_use_id => String.t(),
     :content => map(),
-    optional(:cache_control) => map(),  # todo expand
+    optional(:cache_control) => Messages.Request.cache_control()
   }
 
   @type container_upload() :: %{
     :type => String.t(),
     :file_id => String.t(),
-    optional(:cache_control) => map(),  # todo expand
+    optional(:cache_control) => Messages.Request.cache_control()
   }
+
+  @type source() ::
+    base64_source() |
+    text_source() |
+    content_source() |
+    url_source() |
+    file_source()
+
+  @type base64_source() :: %{
+    type: String.t(),
+    media_type: String.t(),
+    data: String.t()
+  }
+
+  @type text_source() :: %{
+    type: String.t(),
+    media_type: String.t(),
+    data: String.t()
+  }
+
+  @type content_source() :: %{
+    type: String.t(),
+    content: String.t() | text_content() | image_content()
+  }
+
+  @type url_source() :: %{
+    type: String.t(),
+    url: String.t()
+  }
+
+  @type file_source() :: %{
+    type: String.t(),
+    file_id: String.t()
+  }
+
+  @type citation() :: map() # todo - expand
 
   # Schemas
 
@@ -145,8 +185,8 @@ defmodule Anthropix.Message do
   defschema :text_content, %{
     type: {:required, {:literal, "text"}},
     text: {:required, :string},
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
-    citations: {:list, get_schema(:_citation)},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
+    citations: {:list, get_schema(:citation)},
   }
 
   defschema :image_content, %{
@@ -156,7 +196,7 @@ defmodule Anthropix.Message do
       get_schema(:url_source),
       get_schema(:file_source)
     ]}},
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
   }
 
   defschema :document_content, %{
@@ -170,8 +210,8 @@ defmodule Anthropix.Message do
     ]}},
     title: {:string, {:max, 500}},
     context: :string,
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
-    citations: {:list, get_schema(:_citation)},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
+    citations: {:list, get_schema(:citation)},
   }
 
   defschema :thinking, %{
@@ -190,7 +230,7 @@ defmodule Anthropix.Message do
     id: {:required, :string},
     name: {:required, {:string, {:max, 200}}},
     input: :map,
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
   }
 
   defschema :tool_result, %{
@@ -204,7 +244,7 @@ defmodule Anthropix.Message do
       ]}}
     }}},
     is_error: :boolean,
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
   }
 
   defschema :mcp_tool_use, %{
@@ -213,7 +253,7 @@ defmodule Anthropix.Message do
     name: {:required, :string},
     server_name: {:required, :string},
     input: :map,
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
   }
 
   defschema :mcp_tool_result, %{
@@ -226,7 +266,7 @@ defmodule Anthropix.Message do
       ]}}
     }}},
     is_error: :boolean,
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
   }
 
   defschema :server_tool_use, %{
@@ -234,7 +274,7 @@ defmodule Anthropix.Message do
     id: {:required, :string},
     name: {:required, {:enum, ["web_search", "code_execution"]}},
     input: :map,
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
   }
 
   defschema :web_search_tool_result, %{
@@ -244,7 +284,7 @@ defmodule Anthropix.Message do
       {:list, get_schema(:web_search_tool_result_content)},
       get_schema(:web_search_tool_result_error)
     }}},
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
   }
 
   defschema :code_execution_tool_result, %{
@@ -254,14 +294,16 @@ defmodule Anthropix.Message do
       get_schema(:code_execution_tool_result_content),
       get_schema(:code_execution_tool_result_error)
     }}},
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
   }
 
   defschema :container_upload, %{
     type: {:required, {:literal, "container_upload"}},
     file_id: {:required, :string},
-    cache_control: {:either, {get_schema(:_cache_control), nil}},
+    cache_control: {:either, {Messages.Request.get_schema(:cache_control), nil}},
   }
+
+  defschema :citation, :map # expand in future
 
   # Source schemas
 
@@ -333,17 +375,6 @@ defmodule Anthropix.Message do
   defschema :code_execution_tool_result_error, %{
     type: {:required, {:literal, "code_execution_tool_result_error"}},
     error_code: {:required, :string}
-  }
-
-  # todo - define in message request?
-
-  defschema :_cache_control, %{
-    type: {:required, {:literal, "ephemeral"}},
-    ttl: {:enum, ["5m", "1h"]}
-  }
-
-  defschema :_citation, %{
-    # todo
   }
 
   # Functions
