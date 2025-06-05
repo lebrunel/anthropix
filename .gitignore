@@ -26,3 +26,5 @@ anthropix-*.tar
 /tmp/
 
 .env
+
+/config/secret.exs
