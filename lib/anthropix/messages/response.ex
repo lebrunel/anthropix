@@ -3,7 +3,18 @@ defmodule Anthropix.Messages.Response do
   import Anthropix.Utils.MapUtils, only: [safe_atomize_keys: 1]
   alias Anthropix.Message
 
-  defstruct [:id, :type, :role, :content, :model, :stop_reason, :stop_sequence, :usage, :container]
+  defstruct [
+    :id,
+    :type,
+    :role,
+    :content,
+    :model,
+    :stop_reason,
+    :stop_sequence,
+    :usage,
+    :container,
+    :raw
+  ]
 
   @type t() :: %__MODULE__{
     id: String.t(),
@@ -14,7 +25,8 @@ defmodule Anthropix.Messages.Response do
     stop_reason: String.t() | nil,
     stop_sequence: String.t() | nil,
     usage: usage(),
-    container: map() | nil
+    container: map() | nil,
+    raw: Req.Response.t() | nil
   }
 
   @type container() :: %{
@@ -59,16 +71,26 @@ defmodule Anthropix.Messages.Response do
     service_tier: :string
   }
 
-  @spec new(data :: map()) :: {:ok, t()} | {:error, term()}
-  def new(data) when is_map(data) do
-    with {:ok, params} <- response(safe_atomize_keys(data)) do
+  @spec new(params :: Req.Response.t() | map()) :: {:ok, t()} | {:error, term()}
+  def new(%Req.Response{body: body} = raw) do
+    with {:ok, response} <- new(body) do
+      {:ok, %{response | raw: raw}}
+    end
+  end
+
+  def new(params) when is_map(params) do
+    with {:ok, params} <- response(safe_atomize_keys(params)) do
       {:ok, struct(__MODULE__, params)}
     end
   end
 
-  @spec new!(data :: map()) :: t()
-  def new!(data) when is_map(data) do
-    struct!(__MODULE__, response!(safe_atomize_keys(data)))
+  @spec new!(params :: Req.Response.t() | map()) :: t()
+  def new!(%Req.Response{body: body} = raw) do
+    new!(body) |> Map.put(:raw, raw)
+  end
+
+  def new!(params) when is_map(params) do
+    struct!(__MODULE__, response!(safe_atomize_keys(params)))
   end
 
 end

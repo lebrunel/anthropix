@@ -1,6 +1,7 @@
 defmodule Anthropix.Messages.Request do
   import Peri
-  alias Anthropix.{Message, Tool}
+  alias Anthropix.{APIError, Message, Tool}
+  alias Anthropix.Messages
 
   @default_max_tokens 4096
 
@@ -87,12 +88,12 @@ defmodule Anthropix.Messages.Request do
     tools: {:list, get_schema(:tool)},
 
     # Extended thinking
-    thinking: get_schema(:thinking),
+    thinking: {:either, {get_schema(:thinking), nil}},
 
     # Misc
     container: :string,
     mcp_servers: {:list, get_schema(:mcp_server)},
-    metadata: get_schema(:metadata),
+    metadata: {:either, {get_schema(:metadata), nil}},
     service_tier: {:enum, ["auto", "standard_only"]},
     # stream - option or manually add based on function?
 
@@ -177,6 +178,32 @@ defmodule Anthropix.Messages.Request do
     struct!(__MODULE__, client: client, body: body, options: opts)
   end
 
+  @spec call(request :: t()) :: {:ok, Messages.Response.t()} | {:error, term()}
+  def call(%__MODULE__{client: client, body: body}) do
+    case Req.post(client.req, url: "/messages", json: body) do
+      {:ok, %{status: status} = res} when status in 200..299 ->
+        Messages.Response.new(res)
+      {:ok, res} ->
+        {:error, APIError.exception(res)}
+      {:error, error} ->
+        {:error, error}
+    end
+  end
+
+  @spec call!(request :: t()) :: Messages.Response.t()
+  def call!(%__MODULE__{} = request) do
+    case call(request) do
+      {:ok, response} -> response
+      {:error, error} -> raise error
+    end
+  end
+
+  @spec stream(request :: t()) :: Messages.StreamingResponse.t()
+  def stream(%__MODULE__{client: client, body: body}) do
+    client.req
+    |> Req.merge(url: "/messages", json: Map.put(body, :stream, true))
+    |> Messages.StreamingResponse.init()
+  end
 
   # Helpers
 
@@ -184,9 +211,11 @@ defmodule Anthropix.Messages.Request do
   defp split_keys(input, keys) when is_map(input), do: Map.split(input, keys)
   defp split_keys(input, keys) when is_list(input), do: Keyword.split(input, keys)
 
+  @spec tool_choice_is_tool(data :: any()) :: boolean()
   defp tool_choice_is_tool(%{tool_choice: %{type: "tool"}}), do: true
   defp tool_choice_is_tool(_data), do: false
 
+  @spec thinking_is_enabled(data :: any()) :: boolean()
   defp thinking_is_enabled(%{thinking: %{type: "enabled"}}), do: true
   defp thinking_is_enabled(_data), do: false
 
