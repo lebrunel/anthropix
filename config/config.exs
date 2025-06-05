@@ -13,6 +13,6 @@ import Config
 # ```sh
 # mix test --only integration
 # ```
-if File.exists?("config/secret.exs") do
+if config_env() in [:dev, :test] and File.exists?("config/secret.exs") do
   import_config "secret.exs"
 end
