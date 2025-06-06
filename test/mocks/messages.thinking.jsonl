@@ -1,0 +1,34 @@
+{"type":"message_start","message":{"id":"msg_017kArag8ghAuWNYrbV9TsYX","type":"message","role":"assistant","model":"claude-sonnet-4-20250514","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":52,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":2,"service_tier":"standard"}}}
+{"type":"content_block_start","index":0,"content_block":{"type":"thinking","thinking":"","signature":""}}
+{"type": "ping"}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"Let"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" me count the R's in \"strawberry\":"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"\ns-t-r-a-w-b-"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"e-r-r-y\n\nLooking at each letter:"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"\n- s: not an R\n- t: not"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" an R\n- r: this is an R (1"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"st R)\n- a: not an R\n-"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" w: not an R\n- b: not an R"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"\n- e: not an R\n- r: this"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" is an R (2nd R)\n- r: this is an R"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" (3rd R)\n- y: not an R"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"\n\nSo there are 3 R"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"'s in \"strawberry\".\n\nNow I need to write"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" a haiku about this. A haiku has"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" the structure 5-7-"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"5 syllables.\n\nLet me try"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":":\n\"Three R's hide within\""}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" (5 syllables: Three R's hide"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" with-in)\n\"The sweet"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" red strawberry word\" (7 syllables: The"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":" sweet red straw-ber-ry wor"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"d)\n\"Count them carefully\" (5 "}}
+{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"syllables: Count them care-ful-ly)"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"signature_delta","signature":"EvwFCkYIBBgCKkC93RJIwshsEFHW9CtJNQeXaDLeHyDev/tUczEah0LbJ1o2qYU1tOFWMf3r+QusGrRbDBbq6nzXfCyag1+hw1GHEgxaVvgDhPmIoHQ/MNcaDDzrQ809dX2qfLAPxCIwa1wJY9TCNsmDEv6uRAK9ONlSLtppW5eN0copF3UeaHXbuidcuUfUENVoOnAJtLmnKuMEx28+UKlvpZHBysXgLJufKjgj2A2/NFol6MCfiAGlwco02v7yC1/CqDuDJvEPWyvf+JDDSJErWM/rnrpJgnMCXZhfLZOUCqK37Kr9Y+O8pwRn1y9URHofExPojPPSp3+btMfczoaC1YDYcH7Ac/fxnhs02knb7dhVYbL4rGGN9sKupiRV+XDmRvsrqw7qIKiOneihQpDXjTOKReCqC5LyIb8EgbFoqPOljgSrumu+B5C0G30GDz5JjASyE9dpPCHMHKPqjvDRYnx2ljTkemdLFA/FREzailS57ePmdbEIk9pNTGHxtyHJZrHylcnniiDhxyiRzSK0w4q+SjWoupMyLlYYNBsvYKC9qx08HhR5BUPTumFq4e1fIyozmmh8d9KG8oukLZar8hxVqGr8G2uzejiTAOScisbbg25V2f71NPHTpoZfFgmdDsavvxM2S3Gh1HOe3lg94bAGRVL+J9I/gJbftUbtY5Orx7/HK/gCmVPIKg/KwQe5Pwe/F9aEZ5oCnWVkfL15uQ8GzWFjD/fajHn5GlPHviuVpeZQqKJ+fhMZv5IoSXrUixSgIF0U443UIxarx+U4wne3BVmDWu2mR0xWM3np16rR7+HuhHIvydMua6Jw4R9W6qcHndNWicnwLfMpuRckpKWID3I0UCxw0I8oo3s01ZNXUj0WkUoLW5Pc1gt3xe067117SSEZ+Kx8+W+7XSHIS9nvRpFA1dSByvXlzo8YM6kuCvUpHdHCY2SBm9noCbhNPyXW6tuW1h8yd0SwVyu+QNHg3nuS5ZeFQmx9n1pNXUF9DWarKSTrUJxCrFcYAQ=="}}
+{"type":"content_block_stop","index":0}
+{"type":"content_block_start","index":1,"content_block":{"type":"text","text":""}}
+{"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Three R's hide within\nThe sweet red strawberry word\nCount"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":" them carefully"}}
+{"type":"content_block_stop","index":1}
+{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":271}}
+{"type":"message_stop"}

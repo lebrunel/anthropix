@@ -4,6 +4,7 @@ defmodule Anthropix.Messages.Request do
   alias Anthropix.Messages
 
   @default_max_tokens 4096
+  @default_thinking_tokens 1024
 
   @enforce_keys [:client, :body, :options]
   defstruct [:client, :body, :options]
@@ -146,7 +147,7 @@ defmodule Anthropix.Messages.Request do
 
   defschema :thinking, %{
     type: {:enum, ["enabled", "disabled"]},
-    budget_tokens: {:cond, &thinking_is_enabled/1, {:required, {:integer, {:gte, 1024}}}, nil}
+    budget_tokens: {:cond, &thinking_is_enabled/1, {{:integer, {:gte, 1024}}, {:default, @default_thinking_tokens}}, nil}
   }
 
   defschema :metadata, %{

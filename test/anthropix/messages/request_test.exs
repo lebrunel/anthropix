@@ -1,6 +1,7 @@
 defmodule Anthropix.Messages.RequestTest do
   use ExUnit.Case, async: true
   alias Anthropix.{Message, Messages}
+  alias Anthropix.Mock2, as: Mock
 
   @client Anthropix.init("test")
 
@@ -9,10 +10,11 @@ defmodule Anthropix.Messages.RequestTest do
     messages: [%{role: "user", content: "Hello"}]
   }
 
-  @kitchen_sink_params %{
-    model: "claude-opus-4-20250514",
-    messages: [%{role: "user", content: "Hello"}]
-  }
+  # todo - test for kitchen sink params
+  #@kitchen_sink_params %{
+  #  model: "claude-opus-4-20250514",
+  #  messages: [%{role: "user", content: "Hello"}]
+  #}
 
   describe "new/2" do
     test "accepts valid params" do
@@ -91,21 +93,21 @@ defmodule Anthropix.Messages.RequestTest do
       assert body.thinking.type == "disabled"
     end
 
-    test "thinking budget tokens is required and must be greater than or equal 1024 when thinking enabled" do
+    test "thinking budget tokens defaults to 1024 and must be greater than or equal 1024 when thinking enabled" do
+      assert {:ok, %{body: body}} = Messages.Request.new(@client, Map.merge(@minimum_params, %{
+        thinking: %{type: "enabled"}
+      }))
+      assert body.thinking.budget_tokens == 1024
+
       assert {:ok, %{body: body}} = Messages.Request.new(@client, Map.merge(@minimum_params, %{
         thinking: %{type: "enabled", budget_tokens: 1024}
       }))
       assert body.thinking.budget_tokens == 1024
 
       assert {:error, errors} = Messages.Request.new(@client, Map.merge(@minimum_params, %{
-        thinking: %{type: "enabled"}
-      }))
-      assert includes_error?(errors, :budget_tokens)
-
-      assert {:error, errors} = Messages.Request.new(@client, Map.merge(@minimum_params, %{
         thinking: %{type: "enabled", budget_tokens: 100}
       }))
-      assert includes_error?(errors, :budget_tokens)
+      assert includes_error?(errors, :thinking)
     end
 
     test "container must be a string" do
@@ -275,6 +277,168 @@ defmodule Anthropix.Messages.RequestTest do
       }))
       assert includes_error?(errors, :max_steps)
     end
+  end
+
+  describe "call/1 mocked" do
+    test "generates text" do
+      client = Anthropix.init(plug: Mock.respond("messages.text.json"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-20241022",
+        messages: [%{role: "user", content: "Write a haiku about the sky."}]
+      })
+      assert {:ok, response} = Messages.Request.call(request)
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+    end
+
+    test "generates tool use" do
+      client = Anthropix.init(plug: Mock.respond("messages.tools.json"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-20241022",
+        messages: [%{role: "user", content: "What is John Smith's phone number?"}],
+        tools: [%{
+          type: "custom",
+          name: "get_contact_details",
+          description: "Look up and return a contact's address and phone number.",
+          input_schema: %{
+            type: "object",
+            properties: %{
+              name: %{type: "string", description: "The name of the contact"}
+            },
+            required: ["name"]
+          }
+        }]
+      })
+      assert {:ok, response} = Messages.Request.call(request)
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+      assert Enum.any?(response.content, & &1.type == "tool_use" and &1.name == "get_contact_details")
+    end
+
+    test "generates extended thinking" do
+      client = Anthropix.init(plug: Mock.respond("messages.thinking.json"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-sonnet-4-20250514",
+        messages: [%{role: "user", content: "How many R's are in the word strawberry. Answer with a haiku."}],
+        thinking: %{type: "enabled"}
+      })
+      assert {:ok, response} = Messages.Request.call(request)
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "thinking" and is_binary(&1.thinking))
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+    end
+  end
+
+  describe "stream/1 mocked" do
+    test "streams text" do
+      client = Anthropix.init(plug: Mock.stream("messages.text.jsonl"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-20241022",
+        messages: [%{role: "user", content: "Write a haiku about the sky."}]
+      })
+      assert {:ok, response} =
+        Messages.Request.stream(request)
+        |> Messages.StreamingResponse.run()
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+    end
+
+    test "streams tool use" do
+      client = Anthropix.init(plug: Mock.stream("messages.tools.jsonl"))
+      #client = Anthropix.init()
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-20241022",
+        messages: [%{role: "user", content: "What is John Smith's phone number?"}],
+        tools: [%{
+          type: "custom",
+          name: "get_contact_details",
+          description: "Look up and return a contact's address and phone number.",
+          input_schema: %{
+            type: "object",
+            properties: %{
+              name: %{type: "string", description: "The name of the contact"}
+            },
+            required: ["name"]
+          }
+        }]
+      })
+      assert {:ok, response} =
+        Messages.Request.stream(request)
+        |> Messages.StreamingResponse.run()
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+      assert Enum.any?(response.content, & &1.type == "tool_use" and &1.name == "get_contact_details")
+    end
+
+    test "streams extended thinking" do
+      client = Anthropix.init(plug: Mock.stream("messages.thinking.jsonl"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-sonnet-4-20250514",
+        messages: [%{role: "user", content: "How many R's are in the word strawberry. Answer with a haiku."}],
+        thinking: %{type: "enabled"}
+      })
+      assert {:ok, response} =
+        Messages.Request.stream(request)
+        |> Messages.StreamingResponse.run()
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "thinking" and is_binary(&1.thinking))
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+    end
+  end
+
+  describe "call/1 integration" do
+    @describetag :integration
+
+    setup do
+      {:ok, client: Anthropix.init()}
+    end
+
+    test "handles simple text generation", %{client: client} do
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-20241022",
+        messages: [%{role: "user", content: "Write a haiku about the sky."}]
+      })
+
+      assert {:ok, response} = Messages.Request.call(request)
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+    end
+
+    test "testing2", %{client: client} do
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-20241022",
+        messages: [%{role: "user", content: "Write a haiku about the sky."}]
+      })
+
+      assert {:ok, response} =
+        Messages.Request.stream(request)
+        |> Messages.StreamingResponse.run()
+
+        assert valid_response?(response)
+    end
+  end
+
+  @spec valid_response?(term()) :: :ok
+  defp valid_response?(res) do
+    assert match?(%Messages.Response{}, res)
+    assert is_binary(res.id)
+    assert is_binary(res.model)
+    assert res.type == "message"
+    assert res.role == "assistant"
+    assert is_list(res.content)
+    assert is_binary(res.stop_reason)
+    assert is_map(res.usage)
+    assert is_integer(res.usage.input_tokens)
+    assert is_integer(res.usage.output_tokens)
+    assert is_binary(res.usage.service_tier)
+    assert match?(%Req.Response{}, res.raw)
+    :ok
   end
 
   # todo
