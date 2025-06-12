@@ -16,5 +16,10 @@ defmodule Anthropix.APIError do
       message: "Empty response received",
       ])
   end
-
+  def exception(%{status: status, body: message}) when is_binary(message) do
+    struct(__MODULE__, [
+      status: status,
+      message: message,
+      ])
+  end
 end
