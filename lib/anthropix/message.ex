@@ -379,7 +379,6 @@ defmodule Anthropix.Message do
 
   # Functions
 
-
   @spec new(params :: Enumerable.t()) :: {:ok, t()} | {:error, term()}
   def new(params) when is_map(params) or is_list(params) do
     with {:ok, params} <- message(params) do

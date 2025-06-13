@@ -1,6 +1,6 @@
-defmodule Anthropix.Utils.MapUtilsTest do
+defmodule Anthropix.Util.MapUtilsTest do
   use ExUnit.Case, async: true
-  alias Anthropix.Utils.MapUtils
+  alias Anthropix.Util.MapUtils
 
   setup_all do
     # Create known atoms

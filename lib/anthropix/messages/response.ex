@@ -1,6 +1,6 @@
 defmodule Anthropix.Messages.Response do
   import Peri
-  import Anthropix.Utils.MapUtils, only: [safe_atomize_keys: 1]
+  import Anthropix.Util.MapUtils, only: [safe_atomize_keys: 1]
   alias Anthropix.Message
 
   defstruct [

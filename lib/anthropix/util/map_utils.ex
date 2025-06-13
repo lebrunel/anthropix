@@ -1,4 +1,4 @@
-defmodule Anthropix.Utils.MapUtils do
+defmodule Anthropix.Util.MapUtils do
 
   @doc """
   Recursively walks a map and converts string keys to atoms, but only if the
