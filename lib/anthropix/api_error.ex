@@ -10,16 +10,16 @@ defmodule Anthropix.APIError do
       message: message,
       ])
   end
-  def exception(%{status: status, body: ""}) do
-    struct(__MODULE__, [
-      status: status,
-      message: "Empty response received",
-      ])
-  end
-  def exception(%{status: status, body: message}) when is_binary(message) do
+
+  def exception(%{status: status, body: body}) when is_binary(body) do
+    message = case {status, body} do
+      {529, ""} -> "Overloaded"
+      {_, ""} -> "Empty response"
+      {_, message} -> message
+    end
     struct(__MODULE__, [
       status: status,
       message: message,
-      ])
+    ])
   end
 end
