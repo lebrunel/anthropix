@@ -3,6 +3,13 @@ defmodule AnthropixTest do
   alias Anthropix.{APIError, Mock}
 
   describe "init without api_key" do
+    setup do
+      existing_key = Application.get_env(:anthropix, :api_key)
+      on_exit fn ->
+        Application.put_env(:anthropix, :api_key, existing_key)
+      end
+    end
+
     test "raises if no api_key in config" do
       Application.delete_env(:anthropix, :api_key)
       assert_raise ArgumentError, fn -> Anthropix.init() end

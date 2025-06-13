@@ -1,0 +1,75 @@
+{"type":"message_start","message":{"id":"msg_01CmmJKZLWo76xLtcoherYKz","type":"message","role":"assistant","model":"claude-3-5-haiku-20241022","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":738,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":1,"service_tier":"standard"}}}
+{"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"I"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"'ll"}}
+{"type": "ping"}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" use Python"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" to calculate the mean an"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"d standard deviation,"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" and then"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" craft a haiku base"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"d on the"}}
+{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" results."}}
+{"type":"content_block_stop","index":0}
+{"type":"content_block_start","index":1,"content_block":{"type":"server_tool_use","id":"srvtoolu_01LQnu79YGE5wuFNXDqLGuGT","name":"code_execution","input":{}}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":""}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"{\"code\": \"import numpy as np\\n\\ndata = ["}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"1, 2,"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":" 3, 4"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":", 5, "}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"6, 7,"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":" 8, 9"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":", 10]"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"\\nmean = np.mean"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"(data)\\nst"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"d_"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"dev = np.st"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"d(data)\\n\\nprint"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"(f\\\"Mean:"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":" {mean}\\\")\\nprint"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"(f\\\"Standar"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"d Deviation: {std_"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"dev}\\\")"}}
+{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"\"}"}}
+{"type":"content_block_stop","index":1}
+{"type":"content_block_start","index":2,"content_block":{"type":"code_execution_tool_result","tool_use_id":"srvtoolu_01LQnu79YGE5wuFNXDqLGuGT","content":{"type":"code_execution_result","stdout":"Mean: 5.5\nStandard Deviation: 2.8722813232690143\n","stderr":"","return_code":0,"content":[]}}}
+{"type":"content_block_stop","index":2}
+{"type":"content_block_start","index":3,"content_block":{"type":"text","text":""}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"Now"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":", a"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" haiku to"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" capture these"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" statistical insights"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":":\n\nNumbers"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" dance"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" and s"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"way"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"\nFive point"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" five at"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" center's"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" heart\nSprea"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"d whis"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"pers three"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" wide"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"\n\nThe"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" ha"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"iku reflects"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" the results"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":":"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"\n- \""}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"Five point five\" represents the"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" mean of"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" 5.5"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"\n- \"Spread whis"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"pers three wide\" all"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"udes to the standard deviation"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" of approximately"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" 2.87"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":"\n- The"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" imagery"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" of numbers"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" dancing captures"}}
+{"type":"content_block_delta","index":3,"delta":{"type":"text_delta","text":" the statistical variation"}}
+{"type":"content_block_stop","index":3}
+{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null,"container":{"id":"container_011CQ6KUMftyzX5xFc2YtWPv","expires_at":"2025-06-13T14:43:50.105743Z"}},"usage":{"input_tokens":1669,"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"output_tokens":251,"server_tool_use":{"web_search_requests":0}}}
+{"type":"message_stop"}

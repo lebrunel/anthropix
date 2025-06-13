@@ -1,6 +1,6 @@
 defmodule Anthropix.Messages.RequestTest do
   use ExUnit.Case, async: true
-  alias Anthropix.{Message, Messages}
+  alias Anthropix.{Message, Messages, Tool, Tools}
   alias Anthropix.Mock2, as: Mock
 
   @client Anthropix.init("test")
@@ -80,11 +80,15 @@ defmodule Anthropix.Messages.RequestTest do
       assert includes_error?(errors, :tool_choice)
     end
 
-    @tag :skip
-    test "tools"
-    # todo - accepts maps
-    # todo - accepts structs
-    # todo - accepts presets
+    test "tools can be maps or structs" do
+      assert {:ok, %{body: body}} = Messages.Request.new(@client, Map.merge(@minimum_params, %{
+        tools: [
+          %{name: "test1", input_schema: %{type: "null"}},
+          Tool.new!(name: "test2", input_schema: %{type: "null"})
+        ]
+      }))
+      assert length(body.tools) == 2
+    end
 
     test "thinking can be disabled" do
       assert {:ok, %{body: body}} = Messages.Request.new(@client, Map.merge(@minimum_params, %{
@@ -330,6 +334,36 @@ defmodule Anthropix.Messages.RequestTest do
       assert Enum.any?(response.content, & &1.type == "thinking" and is_binary(&1.thinking))
       assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
     end
+
+    test "generates with code execution tool" do
+      client = Anthropix.init(plug: Mock.respond("messages.code-execution.json"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-latest",
+        messages: [%{role: "user", content: "Calculate the mean and standard deviation of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]. Answer with a haiku."}],
+        tools: [Tools.CodeExecution.new!()]
+      })
+      assert {:ok, response} = Messages.Request.call(request)
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "server_tool_use" and is_binary(&1.input.code))
+      assert Enum.any?(response.content, & &1.type == "code_execution_tool_result" and is_map(&1.content))
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+    end
+
+    test "generates with web search tool" do
+      client = Anthropix.init(plug: Mock.respond("messages.web-search.json"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-latest",
+        messages: [%{role: "user", content: "When was Terry Nutkins born? Answer with a haiku."}],
+        tools: [Tools.WebSearch.new!()]
+      })
+      assert {:ok, response} = Messages.Request.call(request)
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "server_tool_use" and is_binary(&1.input.query))
+      assert Enum.any?(response.content, & &1.type == "web_search_tool_result" and is_list(&1.content))
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+    end
   end
 
   describe "stream/1 mocked" do
@@ -388,6 +422,40 @@ defmodule Anthropix.Messages.RequestTest do
 
       assert valid_response?(response)
       assert Enum.any?(response.content, & &1.type == "thinking" and is_binary(&1.thinking))
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+    end
+
+    test "streams with code execution tool" do
+      client = Anthropix.init(plug: Mock.stream("messages.code-execution.jsonl"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-latest",
+        messages: [%{role: "user", content: "Calculate the mean and standard deviation of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]. Answer with a haiku."}],
+        tools: [Tools.CodeExecution.new!()]
+      })
+      assert {:ok, response} =
+        Messages.Request.stream(request)
+        |> Messages.StreamingResponse.run()
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "server_tool_use" and is_binary(&1.input.code))
+      assert Enum.any?(response.content, & &1.type == "code_execution_tool_result" and is_map(&1.content))
+      assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
+    end
+
+    test "streams with web search tool" do
+      client = Anthropix.init(plug: Mock.stream("messages.web-search.jsonl"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-sonnet-4-20250514",
+        messages: [%{role: "user", content: "When was Terry Nutkins born? Answer with a haiku."}],
+        tools: [Tools.WebSearch.new!()]
+      })
+      assert {:ok, response} =
+        Messages.Request.stream(request)
+        |> Messages.StreamingResponse.run()
+
+      assert valid_response?(response)
+      assert Enum.any?(response.content, & &1.type == "server_tool_use" and is_binary(&1.input.query))
+      assert Enum.any?(response.content, & &1.type == "web_search_tool_result" and is_list(&1.content))
       assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
     end
   end

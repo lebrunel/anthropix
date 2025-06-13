@@ -78,7 +78,10 @@ defmodule Anthropix.Messages.Request do
     model: {:required, :string},
 
     # Prompt
-    messages: {:required, {:list, Message.get_schema(:message)}},
+    messages: {:required, {:list, {:either, {
+      Message.get_schema(:message),
+      {:custom, &validate_message/1}
+    }}}},
     system: {:either, {
       :string,
       {:list, Message.get_schema(:text_content)}
@@ -86,7 +89,10 @@ defmodule Anthropix.Messages.Request do
 
     # Tool use
     tool_choice: {:either, {get_schema(:tool_choice), nil}},
-    tools: {:list, get_schema(:tool)},
+    tools: {:list, {:either, {
+      Tool.get_schema(:tool),
+      {:custom, &validate_tool/1}
+    }}},
 
     # Extended thinking
     thinking: {:either, {get_schema(:thinking), nil}},
@@ -219,5 +225,13 @@ defmodule Anthropix.Messages.Request do
   @spec thinking_is_enabled(data :: any()) :: boolean()
   defp thinking_is_enabled(%{thinking: %{type: "enabled"}}), do: true
   defp thinking_is_enabled(_data), do: false
+
+  @spec validate_message(val :: any()) :: :ok | {:error, term(), keyword()}
+  defp validate_message(%Message{}), do: :ok
+  defp validate_message(val), do: {:error, "Invalid message. Expected %Message{} but got %{val}", [val: val]}
+
+  @spec validate_tool(val :: any()) :: :ok | {:error, term(), keyword()}
+  defp validate_tool(%Tool{}), do: :ok
+  defp validate_tool(val), do: {:error, "Invalid tool. Expected %Tool{} but got %{val}", [val: val]}
 
 end

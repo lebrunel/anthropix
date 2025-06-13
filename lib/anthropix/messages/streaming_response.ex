@@ -93,8 +93,17 @@ defmodule Anthropix.Messages.StreamingResponse do
 
     # Spawn async request
     spawn fn ->
-      result = Req.post(req, into: fn {:data, data}, acc ->
-        for event <- decode_sse_events(data) do
+      result = Req.post(req, into: fn {:data, data}, {req, res} ->
+        # Get buffer from response private data, or start with empty binary
+        buffer = Req.Response.get_private(res, :sse_buffer, "")
+
+        # Process complete events and get any remaining partial data
+        {events, buffer} = decode_sse_events(buffer <> data)
+
+        # Update response with new buffer
+        res = Req.Response.put_private(res, :sse_buffer, buffer)
+
+        for event <- events do
           case event.type do
             type when type in @sse_events ->
               send(pid, {ref, {:data, event}})
@@ -107,7 +116,7 @@ defmodule Anthropix.Messages.StreamingResponse do
           end
         end
 
-        {:cont, acc}
+        {:cont, {req, res}}
       end)
 
       send(pid, {ref, result})
@@ -190,7 +199,7 @@ defmodule Anthropix.Messages.StreamingResponse do
 
     after
       # receive timeout
-      5_000 -> :timeout
+      15_000 -> :timeout
     end
   end
 
@@ -234,7 +243,7 @@ defmodule Anthropix.Messages.StreamingResponse do
 
     after
       # receive timeout
-      5_000 -> {:error, :timeout}
+      15_000 -> {:error, :timeout}
     end
   end
 
@@ -261,11 +270,18 @@ defmodule Anthropix.Messages.StreamingResponse do
     end
   end
 
-  @spec decode_sse_events(data :: binary()) :: list(map())
+  @spec decode_sse_events(data :: binary()) :: {list(map()), binary()}
   defp decode_sse_events(data) do
-    for [_, _event, data] <- Regex.scan(@sse_regex, data) do
-      # Trusting Anthropic won't suddenly spam a gazillion unknown keys.
-      Jason.decode!(data, keys: :atoms)
+    case Regex.scan(@sse_regex, data) do
+      [] ->
+        {[], data}
+
+      matches ->
+        events = for [_, _event, data] <- matches do
+          # Trusting Anthropic won't suddenly spam a gazillion unknown keys.
+          Jason.decode!(data, keys: :atoms)
+        end
+        {events, ""}
     end
   end
 

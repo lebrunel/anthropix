@@ -363,10 +363,10 @@ defmodule Anthropix.Message do
 
   defschema :code_execution_tool_result_content, %{
     type: {:required, {:literal, "code_execution_result"}},
-    content: {:required, {:list, %{
+    content: {:list, %{
       type: {:required, {:literal, "code_execution_output"}},
       file_id: {:required, :string}
-    }}},
+    }},
     return_code: {:required, :integer},
     stderr: :string,
     stdout: :string

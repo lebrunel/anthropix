@@ -18,7 +18,10 @@ defmodule Anthropix.Tool do
   @tool_types [:custom, :client, :server]
 
   defschema :tool, %{
-    type: {{:enum, @tool_types}, {:default, :custom}},
+    type: {{:either, {
+      {:enum, @tool_types},
+      {{:enum, Enum.map(@tool_types, &Atom.to_string/1)}, {:transform, &String.to_atom/1}},
+    }}, {:default, :custom}},
     name: {:required, :string},
     description: :string,
     input_schema: {:cond, &is_custom?/1, {:required, {:custom, &validate_input_schema/1}}, nil},
@@ -125,6 +128,7 @@ defmodule Anthropix.Tool do
         def call(_input, _config), do: nil
       end
 
+      @spec new(opts :: Enumerable.t()) :: {:ok, Anthropix.Tool.t()} | {:error, term()}
       def new(opts \\ []) when is_map(opts) or is_list(opts) do
         with {:ok, config} <- init(opts) do
           Anthropix.Tool.new([
@@ -135,6 +139,14 @@ defmodule Anthropix.Tool do
             handler: & call(&1, config),
             config: config
           ])
+        end
+      end
+
+      def new!(opts \\ []) when is_map(opts) or is_list(opts) do
+        case new(opts) do
+          {:ok, tool} -> tool
+          {:error, errors} when is_list(errors) -> raise Peri.InvalidSchema, errors
+          {:error, error} -> raise error
         end
       end
 
