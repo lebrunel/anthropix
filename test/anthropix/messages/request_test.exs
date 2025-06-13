@@ -458,6 +458,20 @@ defmodule Anthropix.Messages.RequestTest do
       assert Enum.any?(response.content, & &1.type == "web_search_tool_result" and is_list(&1.content))
       assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
     end
+
+    test "streaming response returns an API error" do
+      client = Anthropix.init(plug: Mock.stream("overloaded.jsonl"))
+      assert {:ok, request} = Messages.Request.new(client, %{
+        model: "claude-3-5-haiku-20241022",
+        messages: [%{role: "user", content: "Write a haiku about the sky."}]
+      })
+      assert {:error, error} =
+        Messages.Request.stream(request)
+        |> Messages.StreamingResponse.run()
+
+      assert error.type == "overloaded_error"
+      assert error.message == "Overloaded"
+    end
   end
 
   describe "call/1 integration" do

@@ -104,9 +104,10 @@ defmodule Anthropix.Messages.StreamingResponse do
         res = Req.Response.put_private(res, :sse_buffer, buffer)
 
         for event <- events do
-          case event.type do
+          case get_in(event, ["type"]) do
             type when type in @sse_events ->
-              send(pid, {ref, {:data, event}})
+              # Trusting Anthropic won't suddenly spam a gazillion unknown keys.
+              send(pid, {ref, {:data, Recase.Enumerable.atomize_keys(event)}})
 
             "error" ->
               send(pid, {ref, {:error, APIError.exception(event)}})
@@ -278,8 +279,7 @@ defmodule Anthropix.Messages.StreamingResponse do
 
       matches ->
         events = for [_, _event, data] <- matches do
-          # Trusting Anthropic won't suddenly spam a gazillion unknown keys.
-          Jason.decode!(data, keys: :atoms)
+          Jason.decode!(data)
         end
         {events, ""}
     end
