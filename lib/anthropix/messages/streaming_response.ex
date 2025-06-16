@@ -106,8 +106,7 @@ defmodule Anthropix.Messages.StreamingResponse do
         for event <- events do
           case get_in(event, ["type"]) do
             type when type in @sse_events ->
-              # Trusting Anthropic won't suddenly spam a gazillion unknown keys.
-              send(pid, {ref, {:data, Recase.Enumerable.atomize_keys(event)}})
+              send(pid, {ref, {:data, event}})
 
             "error" ->
               send(pid, {ref, {:error, APIError.exception(event)}})
@@ -152,6 +151,11 @@ defmodule Anthropix.Messages.StreamingResponse do
     |> run_loop()
   end
 
+  @spec run_async(streaming :: t()) :: Task.t()
+  def run_async(%__MODULE__{} = streaming) do
+    Task.async(fn -> run(streaming) end)
+  end
+
   @doc """
   Converts the streaming response into a lazy enumerable of all events.
 
@@ -186,8 +190,8 @@ defmodule Anthropix.Messages.StreamingResponse do
   @spec text_stream(streaming :: t()) :: Enumerable.t(String.t())
   def text_stream(%__MODULE__{} = streaming) do
     stream(streaming)
-    |> Stream.filter(& &1.type == "content_block_delta" and &1.delta.type == "text_delta")
-    |> Stream.map(& &1.delta.text)
+    |> Stream.filter(& &1.type == "content_block_delta" and &1.delta["type"] == "text_delta")
+    |> Stream.map(& &1.delta["text"])
   end
 
   # Buffer loop
@@ -261,9 +265,9 @@ defmodule Anthropix.Messages.StreamingResponse do
     # Alyways call "event" handlers
     call_handlers(streaming, :event, data)
 
-    with %{type: "content_block_delta", delta: delta} <- data do
-      case delta.type do
-        "text_delta" -> call_handlers(streaming, :text, delta.text)
+    with %{"type" => "content_block_delta", "delta" => delta} <- data do
+      case delta["type"] do
+        "text_delta" -> call_handlers(streaming, :text, delta["text"])
         _ -> :ok
       end
     else
@@ -286,22 +290,22 @@ defmodule Anthropix.Messages.StreamingResponse do
   end
 
   @spec merge_event(acc :: map(), sse_event :: map()) :: map()
-  defp merge_event(acc, %{type: "message_start", message: message}),
+  defp merge_event(acc, %{"type" => "message_start", "message" => message}),
     do: Map.merge(acc, message)
 
-  defp merge_event(acc, %{type: "content_block_start", index: i, content_block: block}),
-    do: update_in(acc.content, & List.insert_at(&1, i, block))
+  defp merge_event(acc, %{"type" => "content_block_start", "index" => i, "content_block" => block}),
+    do: update_in(acc, ["content"], & List.insert_at(&1, i, block))
 
-  defp merge_event(acc, %{type: "content_block_delta", index: i, delta: delta}) do
-    update_in(acc.content, fn content ->
+  defp merge_event(acc, %{"type" => "content_block_delta", "index" => i, "delta" => delta}) do
+    update_in(acc, ["content"], fn content ->
       List.update_at(content, i, fn block ->
-        case delta.type do
-          "text_delta" -> update_in(block.text, & &1 <> delta.text)
-          "thinking_delta" -> update_in(block.thinking, & &1 <> delta.thinking)
-          "signature_delta" -> put_in(block.signature, delta.signature)
+        case delta["type"] do
+          "text_delta" -> update_in(block, ["text"], & &1 <> delta["text"])
+          "thinking_delta" -> update_in(block, ["thinking"], & &1 <> delta["thinking"])
+          "signature_delta" -> put_in(block, ["signature"], delta["signature"])
           "input_json_delta" ->
-            update_in(block.input, fn input ->
-              Map.update(input, :_json, delta.partial_json, & &1 <> delta.partial_json)
+            update_in(block, ["input"], fn input ->
+              Map.update(input, :_json, delta["partial_json"], & &1 <> delta["partial_json"])
             end)
           _unknown -> block
         end
@@ -309,12 +313,12 @@ defmodule Anthropix.Messages.StreamingResponse do
     end)
   end
 
-  defp merge_event(acc, %{type: "content_block_stop", index: i}) do
-    update_in(acc.content, fn content ->
+  defp merge_event(acc, %{"type" => "content_block_stop", "index" => i}) do
+    update_in(acc, ["content"], fn content ->
       List.update_at(content, i, fn block ->
-        case get_in(block, [:input, :_json]) do
+        case get_in(block, ["input", :_json]) do
           json when is_binary(json) and byte_size(json) > 0 ->
-            put_in(block.input, Jason.decode!(json))
+            put_in(block, ["input"], Jason.decode!(json))
 
           _ -> block
         end
@@ -322,7 +326,7 @@ defmodule Anthropix.Messages.StreamingResponse do
     end)
   end
 
-  defp merge_event(acc, %{type: "message_delta", delta: delta}),
+  defp merge_event(acc, %{"type" => "message_delta", "delta" => delta}),
     do: Map.merge(acc, delta)
 
   # Handles message_stop and any unknown events
