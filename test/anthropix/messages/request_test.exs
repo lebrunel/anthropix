@@ -1,6 +1,6 @@
 defmodule Anthropix.Messages.RequestTest do
   use ExUnit.Case, async: true
-  alias Anthropix.{Message, Messages, Tool, Tools}
+  alias Anthropix.{Message, Messages, StreamingResponse, Tool, Tools}
   alias Anthropix.Mock2, as: Mock
 
   @client Anthropix.init("test")
@@ -375,7 +375,7 @@ defmodule Anthropix.Messages.RequestTest do
       })
       assert {:ok, response} =
         Messages.Request.stream(request)
-        |> Messages.StreamingResponse.run()
+        |> StreamingResponse.run()
 
       assert valid_response?(response)
       assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
@@ -402,7 +402,7 @@ defmodule Anthropix.Messages.RequestTest do
       })
       assert {:ok, response} =
         Messages.Request.stream(request)
-        |> Messages.StreamingResponse.run()
+        |> StreamingResponse.run()
 
       assert valid_response?(response)
       assert Enum.any?(response.content, & &1.type == "text" and is_binary(&1.text))
@@ -418,7 +418,7 @@ defmodule Anthropix.Messages.RequestTest do
       })
       assert {:ok, response} =
         Messages.Request.stream(request)
-        |> Messages.StreamingResponse.run()
+        |> StreamingResponse.run()
 
       assert valid_response?(response)
       assert Enum.any?(response.content, & &1.type == "thinking" and is_binary(&1.thinking))
@@ -434,7 +434,7 @@ defmodule Anthropix.Messages.RequestTest do
       })
       assert {:ok, response} =
         Messages.Request.stream(request)
-        |> Messages.StreamingResponse.run()
+        |> StreamingResponse.run()
 
       assert valid_response?(response)
       assert Enum.any?(response.content, & &1.type == "server_tool_use" and is_binary(&1.input.code))
@@ -451,7 +451,7 @@ defmodule Anthropix.Messages.RequestTest do
       })
       assert {:ok, response} =
         Messages.Request.stream(request)
-        |> Messages.StreamingResponse.run()
+        |> StreamingResponse.run()
 
       assert valid_response?(response)
       assert Enum.any?(response.content, & &1.type == "server_tool_use" and is_binary(&1.input.query))
@@ -467,7 +467,7 @@ defmodule Anthropix.Messages.RequestTest do
       })
       assert {:error, error} =
         Messages.Request.stream(request)
-        |> Messages.StreamingResponse.run()
+        |> StreamingResponse.run()
 
       assert error.type == "overloaded_error"
       assert error.message == "Overloaded"
@@ -500,7 +500,7 @@ defmodule Anthropix.Messages.RequestTest do
 
       assert {:ok, response} =
         Messages.Request.stream(request)
-        |> Messages.StreamingResponse.run()
+        |> StreamingResponse.run()
 
         assert valid_response?(response)
     end

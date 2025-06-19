@@ -62,8 +62,8 @@ defmodule Anthropix.Messages.Response do
   }
 
   defschema :usage, %{
-    input_tokens: {:required, :integer},
-    output_tokens: {:required, :integer},
+    input_tokens: :integer,
+    output_tokens: :integer,
     cache_creation: :map,
     cache_creation_input_tokens: :integer,
     cache_read_input_tokens: :integer,

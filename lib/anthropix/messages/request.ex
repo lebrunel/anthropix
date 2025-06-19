@@ -1,7 +1,6 @@
 defmodule Anthropix.Messages.Request do
   import Peri
-  alias Anthropix.{APIError, Message, Tool}
-  alias Anthropix.Messages
+  alias Anthropix.{APIError, Message, Messages, StreamingResponse, Tool}
 
   @default_max_tokens 4096
   @default_thinking_tokens 1024
@@ -205,11 +204,11 @@ defmodule Anthropix.Messages.Request do
     end
   end
 
-  @spec stream(request :: t()) :: Messages.StreamingResponse.t()
+  @spec stream(request :: t()) :: StreamingResponse.t()
   def stream(%__MODULE__{client: client, body: body}) do
     client.req
     |> Req.merge(url: "/messages", json: Map.put(body, :stream, true))
-    |> Messages.StreamingResponse.init()
+    |> StreamingResponse.init(StreamingResponse.Messages)
   end
 
   # Helpers

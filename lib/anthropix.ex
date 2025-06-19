@@ -99,7 +99,7 @@ defmodule Anthropix do
   misbehave. Setting the `:stream` option to a `t:pid/0` returns a `t:Task.t/0`
   which will send messages to the specified process.
   """
-  alias Anthropix.Messages
+  alias Anthropix.{Messages, StreamingResponse}
 
   defstruct [:req]
 
@@ -235,8 +235,9 @@ defmodule Anthropix do
             streaming =
               request
               |> Messages.Request.stream()
-              |> Messages.StreamingResponse.on(:event, & send(pid, {self(), {:data, &1}}))
-            with {:ok, res} <- Messages.StreamingResponse.run(streaming) do
+              |> StreamingResponse.on(:data, & send(pid, {self(), {:data, &1}}))
+
+            with {:ok, res} <- StreamingResponse.run(streaming) do
               {:ok, get_in(res.raw.body)}
             end
           end)
@@ -246,7 +247,7 @@ defmodule Anthropix do
           stream =
             request
             |> Messages.Request.stream()
-            |> Messages.StreamingResponse.stream()
+            |> StreamingResponse.stream()
           {:ok, stream}
 
         _ ->
