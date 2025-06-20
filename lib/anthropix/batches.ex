@@ -1,8 +1,8 @@
 defmodule Anthropix.Batches do
   import Peri
   import Anthropix.Util.MapUtils, only: [safe_atomize_keys: 1]
-  alias Anthropix.StreamingResponse
-  alias Anthropix.{APIError, Messages}
+  import Anthropix.Util.ReqUtils, only: [handle_response: 2]
+  alias Anthropix.{Messages, StreamingResponse}
 
   @type request() :: list(%{
     custom_id: String.t(),
@@ -156,29 +156,10 @@ defmodule Anthropix.Batches do
   def delete(%Anthropix{} = client, batch_id) when is_binary(batch_id) do
     client.req
     |> Req.delete(url: "/messages/batches/#{batch_id}")
-    |> handle_response()
+    |> handle_response(& {:ok, Recase.Enumerable.atomize_keys(&1)})
   end
 
   # Helpers
-
-  @typep transformer() :: (map() -> {:ok, map()} | {:error, term()})
-
-  @spec handle_response({:ok, Req.Response.t()} | {:error, term()}, transformer()) :: {:ok, response()} | {:error, term()}
-
-  defp handle_response(req_result, transform \\ fn res -> {:ok, res} end)
-
-  defp handle_response({:ok, %{status: status, body: body} = raw}, transform) when status in 200..299 do
-    with {:ok, res} <- transform.(safe_atomize_keys(body)) do
-      res = case res do
-        res when is_map(res) -> Map.put(res, :raw, raw)
-        res -> res
-      end
-      {:ok, res}
-    end
-  end
-
-  defp handle_response({:ok, res}, _transform), do: {:error, APIError.exception(res)}
-  defp handle_response({:error, error}, _transform), do: {:error, error}
 
   @spec jsonl_to_results(String.t()) :: {:ok, list(result())}
   defp jsonl_to_results(jsonl) when is_binary(jsonl) do

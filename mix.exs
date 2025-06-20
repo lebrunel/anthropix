@@ -38,7 +38,8 @@ defmodule Anthropix.MixProject do
     [
       {:ex_doc, "~> 0.38", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
-      {:peri, "~> 0.4"},
+      {:mime, "~> 2.0"},
+      {:peri, "~> 0.5"},
       {:plug, "~> 1.18", only: :test},
       {:recase, "~> 0.8"},
       {:req, "~> 0.5"},

@@ -1,4 +1,9 @@
 defmodule Anthropix.Tools.CodeExecution do
+  @moduledoc """
+  TODO
+
+  NB: beta - code-execution-2025-05-22
+  """
   use Anthropix.Tool, type: :server
   import Peri
   alias Anthropix.Messages
