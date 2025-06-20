@@ -27,4 +27,4 @@ anthropix-*.tar
 
 .env
 
-/config/secret.exs
+/config/local.exs

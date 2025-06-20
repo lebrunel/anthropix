@@ -111,6 +111,16 @@ defmodule Anthropix.Messages.Request do
     top_p: {:float, {:range, {0, 1}}},
   }
 
+  defschema :token_count_request, Map.take(get_schema(:request), [
+    :model,
+    :messages,
+    :mcp_servers,
+    :system,
+    :thinking,
+    :tool_choice,
+    :tools
+  ])
+
   defschema :options, %{
     max_retries: {{:integer, {:gte, 0}}, {:default, 2}},
     max_steps: {{:integer, {:gte, 1}}, {:default, 1}}
