@@ -1,5 +1,6 @@
 defmodule Anthropix.Messages.RequestTest do
   use ExUnit.Case, async: true
+  import Anthropix.TestHelpers
   alias Anthropix.{Message, Messages, StreamingResponse, Tool, Tools}
   alias Anthropix.Mock2, as: Mock
 
@@ -522,18 +523,5 @@ defmodule Anthropix.Messages.RequestTest do
     assert match?(%Req.Response{}, res.raw)
     :ok
   end
-
-  # todo
-  @spec includes_error?(Peri.Error.t(), atom() | list(atom())) :: boolean()
-  defp includes_error?(%Peri.Error{key: key}, key) when is_atom(key), do: true
-  defp includes_error?(%Peri.Error{path: path}, path) when is_list(path), do: true
-
-  defp includes_error?(%Peri.Error{errors: errors}, key) when is_list(errors),
-    do: Enum.any?(errors, &includes_error?(&1, key))
-
-  defp includes_error?(errors, key) when is_list(errors),
-    do: Enum.any?(errors, &includes_error?(&1, key))
-
-  defp includes_error?(%Peri.Error{}, _key), do: false
 
 end

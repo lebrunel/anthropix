@@ -1,5 +1,6 @@
 defmodule Anthropix.ToolTest do
   use ExUnit.Case, async: true
+  import Anthropix.TestHelpers
   alias Anthropix.Tool
 
   @valid_tool_params %{
@@ -197,18 +198,5 @@ defmodule Anthropix.ToolTest do
       assert {:error, "Missing or invalid api_key"} = ConfigTestTool.new(api_key: "")
     end
   end
-
-  # todo
-  @spec includes_error?(Peri.Error.t(), atom() | list(atom())) :: boolean()
-  defp includes_error?(%Peri.Error{key: key}, key) when is_atom(key), do: true
-  defp includes_error?(%Peri.Error{path: path}, path) when is_list(path), do: true
-
-  defp includes_error?(%Peri.Error{errors: errors}, key) when is_list(errors),
-    do: Enum.any?(errors, &includes_error?(&1, key))
-
-  defp includes_error?(errors, key) when is_list(errors),
-    do: Enum.any?(errors, &includes_error?(&1, key))
-
-  defp includes_error?(%Peri.Error{}, _key), do: false
 
 end
