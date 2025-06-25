@@ -1,20 +1,11 @@
 defmodule Anthropix.Messages.Request do
   import Peri
-  alias Anthropix.{APIError, Message, Messages, StreamingResponse, Tool}
+  alias Anthropix.{Message, Tool}
 
   @default_max_tokens 4096
   @default_thinking_tokens 1024
 
-  @enforce_keys [:client, :body, :options]
-  defstruct [:client, :body, :options]
-
-  @opts_keys [:max_retries, :max_steps]
-
-  @type t() :: %__MODULE__{
-    client: Anthropix.client(),
-    body: request(),
-    options: options(),
-  }
+  #@opts_keys [:max_retries, :max_steps]
 
   @type request() :: %{
     :model => String.t(),
@@ -28,17 +19,16 @@ defmodule Anthropix.Messages.Request do
     optional(:mcp_servers) => list(mcp_server()),
     optional(:metadata) => metadata(),
     optional(:service_tier) => String.t(),
-    # stream ?? #todo - have sperate methods instead of configurable?
     optional(:stop_sequences) => list(String.t()),
     optional(:temperature) => float(),
     optional(:top_k) => integer(),
     optional(:top_p) => float(),
   }
 
-  @type options() :: %{
-    optional(:max_retries) => non_neg_integer(),
-    optional(:max_steps) => non_neg_integer()
-  }
+  #@type options() :: %{
+  #  optional(:max_retries) => non_neg_integer(),
+  #  optional(:max_steps) => non_neg_integer()
+  #}
 
   @type tool_choice() :: %{
     :type => String.t(),
@@ -174,58 +164,7 @@ defmodule Anthropix.Messages.Request do
     ttl: {:enum, ["5m", "1h"]}
   }
 
-  # Functions
-
-  @spec new(client :: Anthropix.client(), params :: map() | keyword()) :: {:ok, t()} | {:error, any()}
-  def new(%Anthropix{} = client, params) when is_map(params) or is_list(params) do
-    {opts, params} = split_keys(params, @opts_keys)
-    with {:ok, body} <- request(params),
-         {:ok, opts} <- options(opts)
-    do
-      {:ok, struct(__MODULE__, client: client, body: body, options: opts)}
-    end
-  end
-
-  @spec new!(client :: Anthropix.client(), params :: map() | keyword()) :: t()
-  def new!(%Anthropix{} = client, params) when is_map(params) or is_list(params) do
-    {opts, params} = split_keys(params, @opts_keys)
-    body = request!(params)
-    opts = options!(opts)
-    struct!(__MODULE__, client: client, body: body, options: opts)
-  end
-
-  @spec call(request :: t()) :: {:ok, Messages.Response.t()} | {:error, term()}
-  def call(%__MODULE__{client: client, body: body}) do
-    case Req.post(client.req, url: "/messages", json: body) do
-      {:ok, %{status: status} = res} when status in 200..299 ->
-        Messages.Response.new(res)
-      {:ok, res} ->
-        {:error, APIError.exception(res)}
-      {:error, error} ->
-        {:error, error}
-    end
-  end
-
-  @spec call!(request :: t()) :: Messages.Response.t()
-  def call!(%__MODULE__{} = request) do
-    case call(request) do
-      {:ok, response} -> response
-      {:error, error} -> raise error
-    end
-  end
-
-  @spec stream(request :: t()) :: StreamingResponse.t()
-  def stream(%__MODULE__{client: client, body: body}) do
-    client.req
-    |> Req.merge(url: "/messages", json: Map.put(body, :stream, true))
-    |> StreamingResponse.init(StreamingResponse.Messages)
-  end
-
   # Helpers
-
-  @spec split_keys(input :: map() | keyword(), keys :: list(atom())) :: {map(), map()} | {keyword(), keyword()}
-  defp split_keys(input, keys) when is_map(input), do: Map.split(input, keys)
-  defp split_keys(input, keys) when is_list(input), do: Keyword.split(input, keys)
 
   @spec tool_choice_is_tool(data :: any()) :: boolean()
   defp tool_choice_is_tool(%{tool_choice: %{type: "tool"}}), do: true

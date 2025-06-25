@@ -228,30 +228,26 @@ defmodule Anthropix do
   @deprecated "use XXX instead" # todo update deprecation warning
   @spec chat(client(), keyword()) :: legacy_response()
   def chat(%__MODULE__{} = client, params \\ []) do
-    with {:ok, request} <- Messages.Request.new(client, params) do
+    with {:ok, request} <- Messages.Request.request(params) do
       case Enum.into(params, %{}) |> Map.get(:stream) do
         pid when is_pid(pid) ->
           task = Task.async(fn ->
-            streaming =
-              request
-              |> Messages.Request.stream()
-              |> StreamingResponse.on(:data, & send(pid, {self(), {:data, &1}}))
-
-            with {:ok, res} <- StreamingResponse.run(streaming) do
+            with {:ok, streaming} <- Messages.stream(client, request),
+                 streaming <- StreamingResponse.on(streaming, :data, & send(pid, {self(), {:data, &1}})),
+                 {:ok, res} <- StreamingResponse.run(streaming)
+            do
               {:ok, get_in(res.raw.body)}
             end
           end)
           {:ok, task}
 
         true ->
-          stream =
-            request
-            |> Messages.Request.stream()
-            |> StreamingResponse.stream()
-          {:ok, stream}
+          with {:ok, streaming} <- Messages.stream(client, request) do
+            {:ok, StreamingResponse.stream(streaming)}
+          end
 
         _ ->
-          with {:ok, res} <- Messages.Request.call(request) do
+          with {:ok, res} <- Messages.generate(client, request) do
             {:ok, get_in(res.raw.body)}
           end
       end
