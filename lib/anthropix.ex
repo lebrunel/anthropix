@@ -307,6 +307,20 @@ defmodule Anthropix do
     struct(__MODULE__, req: req)
   end
 
+  schema :chat_thinking_enabled, [
+    type: [type: {:in, ["enabled"]}, required: true],
+    budget_tokens: [type: :non_neg_integer, required: true, doc: "Max number of tokens to use for thinking"],
+    display: [type: {:in, ["summarized", "omitted"]}, doc: "Controls how thinking appears in the response"],
+  ]
+
+  schema :chat_thinking_adaptive, [
+    type: [type: {:in, ["adaptive"]}, required: true],
+    display: [type: {:in, ["summarized", "omitted"]}, doc: "Controls how thinking appears in the response"]
+  ]
+
+  schema :chat_thinking_disabled, [
+    type: [type: {:in, ["disabled"]}, required: true]
+  ]
 
   schema :chat, [
     model: [
@@ -324,12 +338,12 @@ defmodule Anthropix do
       doc: "System prompt.",
     ],
     thinking: [
-      type: :map,
-      keys: [
-        type: [type: {:in, ["enabled"]}],
-        budget_tokens: [type: :non_neg_integer]
-      ],
-      doc: "Enable thinking mode and the budget of tokens to use."
+      type: {:or, [
+                {:map, schema(:chat_thinking_adaptive).schema},
+                {:map, schema(:chat_thinking_disabled).schema},
+                {:map, schema(:chat_thinking_enabled).schema}
+              ]
+            }
     ],
     max_tokens: [
       type: :integer,
